@@ -1,0 +1,14 @@
+C:\Users\Beco\Desktop\IPLeiriaSmartCampus\ShowData\obj\Debug\ShowData.csprojAssemblyReference.cache
+C:\Users\Beco\Desktop\IPLeiriaSmartCampus\ShowData\obj\Debug\ShowData.Form1.resources
+C:\Users\Beco\Desktop\IPLeiriaSmartCampus\ShowData\obj\Debug\ShowData.Properties.Resources.resources
+C:\Users\Beco\Desktop\IPLeiriaSmartCampus\ShowData\obj\Debug\ShowData.csproj.GenerateResource.cache
+C:\Users\Beco\Desktop\IPLeiriaSmartCampus\ShowData\bin\Debug\ShowData.exe.config
+C:\Users\Beco\Desktop\IPLeiriaSmartCampus\ShowData\bin\Debug\ShowData.exe
+C:\Users\Beco\Desktop\IPLeiriaSmartCampus\ShowData\bin\Debug\ShowData.pdb
+C:\Users\Beco\Desktop\IPLeiriaSmartCampus\ShowData\obj\Debug\ShowData.exe
+C:\Users\Beco\Desktop\IPLeiriaSmartCampus\ShowData\obj\Debug\ShowData.pdb
+C:\Users\Beco\Desktop\IPLeiriaSmartCampus\ShowData\bin\Debug\Newtonsoft.Json.dll
+C:\Users\Beco\Desktop\IPLeiriaSmartCampus\ShowData\bin\Debug\Newtonsoft.Json.xml
+C:\Users\Beco\Desktop\IPLeiriaSmartCampus\ShowData\obj\Debug\ShowData.csproj.CopyComplete
+C:\Users\Beco\Desktop\IPLeiriaSmartCampus\ShowData\bin\Debug\M2Mqtt.Net.dll
+C:\Users\Beco\Desktop\IPLeiriaSmartCampus\ShowData\bin\Debug\M2Mqtt.Net.pdb
