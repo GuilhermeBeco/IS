@@ -6,13 +6,17 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using System.Data.SqlClient;
-
+using uPLibrary.Networking.M2Mqtt;
+using System.Text;
 
 namespace IPLeiriaSmartCampus.Controllers
 {
     public class SensorController : ApiController
     {
         static string connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["IPLeiriaSmartCampus.Properties.Settings.ConnStr"].ConnectionString;
+        MqttClient mcClient = new MqttClient(IPAddress.Parse("2001:41d0:a:fed0::1"));
+
+        string topic =  "newSensorsInsertIS";
 
         [Route("api/sensors/")]
         public IHttpActionResult GetAllSensors()
@@ -39,6 +43,41 @@ namespace IPLeiriaSmartCampus.Controllers
                         {
                             sensor.username = reader["username"].ToString();
                         }
+
+                        sensors.Add(sensor);
+                    }
+                    reader.Close();
+                    connection.Close();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+
+            }
+
+            return Ok(sensors);//Respecting HTTP errors (200 OK)
+        }
+        
+        [Route("api/sensors/all")]
+        [HttpPost]
+        public IHttpActionResult GetAllSensors(string SensorID)
+        {
+            List<Sensor> sensors = new List<Sensor>();
+            string query = "Select * from sensor where id >= @id";
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                SqlCommand command = new SqlCommand(query, connection);
+                try
+                {
+                    connection.Open();
+                    command.Parameters.AddWithValue("@id", int.Parse(SensorID));
+                    SqlDataReader reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        Sensor sensor = new Sensor();
+                        sensor.SensorID = int.Parse(reader["id"].ToString());
+                        sensor.Local = reader["local"].ToString();
 
                         sensors.Add(sensor);
                     }
@@ -93,6 +132,19 @@ namespace IPLeiriaSmartCampus.Controllers
                     catch (Exception ex)
                     {
                         Console.WriteLine(ex.Message);
+                    }
+                   mcClient.Connect(Guid.NewGuid().ToString());
+                    if (!mcClient.IsConnected)
+                    {
+                        Console.WriteLine("Error connecting to message broker...");
+
+                    }
+                    mcClient.Publish("data", Encoding.UTF8.GetBytes(sensor.SensorID.ToString()));
+
+                    if (mcClient.IsConnected)
+                    {
+                        mcClient.Unsubscribe(new string[] { topic }); //Put this in a button to see notify!
+                        mcClient.Disconnect();
                     }
 
                 }

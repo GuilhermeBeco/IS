@@ -61,7 +61,7 @@ namespace IPLeiriaSmartCampus.Controllers
             return Ok();
         }
 
-        //mqtt para sensores, owin (tokens)
+        // owin (tokens)
 
         [Route("api/aq/{sensor}")]
         public IHttpActionResult GetLastAQSensor(int sensor)
@@ -113,12 +113,18 @@ namespace IPLeiriaSmartCampus.Controllers
             {
                 if (response.AQID != 0)
                 {
-                    query = "Select  * from AQ where sensorid = @sensor and id >= @id and timestamp between @start and @end order by timestamp desc ";
+                    if(response.SensorID!=0)
+                        query = "Select  * from AQ where sensorid = @sensor and id >= @id and timestamp between @start and @end order by timestamp desc ";
+                    else
+                        query = "Select  * from AQ where id >= @id and timestamp between @start and @end order by timestamp desc ";
                     aqId = response.AQID;
                 }
                 else
                 {
-                    query = "Select  * from AQ where sensorid = @sensor and timestamp between @start and @end order by timestamp desc ";
+                    if(response.SensorID!=0)
+                        query = "Select  * from AQ where sensorid = @sensor and timestamp between @start and @end order by timestamp desc ";
+                    else
+                        query = "Select  * from AQ where timestamp between @start and @end order by timestamp desc ";
                 }
                 filter = true;
             }
@@ -126,12 +132,18 @@ namespace IPLeiriaSmartCampus.Controllers
             {
                 if (response.AQID != 0)
                 {
-                    query = "Select * from AQ  where sensorid = @sensor and id >= @id";
+                    if(response.SensorID!=0)
+                        query = "Select * from AQ  where sensorid = @sensor and id >= @id";
+                    else
+                        query = "Select * from AQ  where id >= @id";
                     aqId = response.AQID;
                 }
                 else
-                {
-                    query = "Select * from AQ  where sensorid = @sensor ";
+                {   
+                    if(response.SensorID!=0)
+                        query = "Select * from AQ  where sensorid = @sensor ";
+                    else
+                        query = "Select * from AQ ";
                 }
                 filter = false;
             }
@@ -139,8 +151,8 @@ namespace IPLeiriaSmartCampus.Controllers
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
                 SqlCommand command = new SqlCommand(query, connection);
-               
-                command.Parameters.AddWithValue("@sensor", response.SensorID);
+                if (response.SensorID != 0) 
+                    command.Parameters.AddWithValue("@sensor", response.SensorID);
                 if (filter)
                 {
                     System.DateTime dtDateTimeStart = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
@@ -242,6 +254,7 @@ namespace IPLeiriaSmartCampus.Controllers
             int rows = 0;
             int fails = 0;
             int id = getId();
+            int idMqtt = id++;
             string query = "Insert into dbo.AQ (SensorID, Temperature, Humidity, Battery, Timestamp,id ) values (@Sensor, @Temp, @Hum, @Bat, @Time, @id)";
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
@@ -283,7 +296,7 @@ namespace IPLeiriaSmartCampus.Controllers
                     Console.WriteLine("Error connecting to message broker...");
 
                 }
-                mcClient.Publish("data", Encoding.UTF8.GetBytes(id.ToString()));
+                mcClient.Publish("data", Encoding.UTF8.GetBytes(idMqtt.ToString()));
                 
                 if (mcClient.IsConnected)
                 {

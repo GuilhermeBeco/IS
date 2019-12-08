@@ -36,6 +36,8 @@
             this.comboBoxOperacao = new System.Windows.Forms.ComboBox();
             this.buttonCreateTrigger = new System.Windows.Forms.Button();
             this.buttonSaveAll = new System.Windows.Forms.Button();
+            this.label4 = new System.Windows.Forms.Label();
+            this.textBoxValor = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // label1
@@ -99,7 +101,7 @@
             // 
             // buttonCreateTrigger
             // 
-            this.buttonCreateTrigger.Location = new System.Drawing.Point(273, 159);
+            this.buttonCreateTrigger.Location = new System.Drawing.Point(273, 192);
             this.buttonCreateTrigger.Name = "buttonCreateTrigger";
             this.buttonCreateTrigger.Size = new System.Drawing.Size(74, 23);
             this.buttonCreateTrigger.TabIndex = 6;
@@ -108,18 +110,36 @@
             // 
             // buttonSaveAll
             // 
-            this.buttonSaveAll.Location = new System.Drawing.Point(353, 159);
+            this.buttonSaveAll.Location = new System.Drawing.Point(353, 192);
             this.buttonSaveAll.Name = "buttonSaveAll";
             this.buttonSaveAll.Size = new System.Drawing.Size(57, 23);
             this.buttonSaveAll.TabIndex = 7;
             this.buttonSaveAll.Text = "Save All";
             this.buttonSaveAll.UseVisualStyleBackColor = true;
             // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(208, 157);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(37, 13);
+            this.label4.TabIndex = 8;
+            this.label4.Text = "Valor: ";
+            // 
+            // textBoxValor
+            // 
+            this.textBoxValor.Location = new System.Drawing.Point(273, 154);
+            this.textBoxValor.Name = "textBoxValor";
+            this.textBoxValor.Size = new System.Drawing.Size(137, 20);
+            this.textBoxValor.TabIndex = 9;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.textBoxValor);
+            this.Controls.Add(this.label4);
             this.Controls.Add(this.buttonSaveAll);
             this.Controls.Add(this.buttonCreateTrigger);
             this.Controls.Add(this.comboBoxOperacao);
@@ -147,6 +167,8 @@
         private System.Windows.Forms.ComboBox comboBoxOperacao;
         private System.Windows.Forms.Button buttonCreateTrigger;
         private System.Windows.Forms.Button buttonSaveAll;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.TextBox textBoxValor;
     }
 }
 

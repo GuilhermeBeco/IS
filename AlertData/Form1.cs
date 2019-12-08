@@ -6,9 +6,12 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Mail;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using uPLibrary.Networking.M2Mqtt;
+using uPLibrary.Networking.M2Mqtt.Messages;
 
 namespace AlertData
 {
@@ -20,11 +23,141 @@ namespace AlertData
         Task<string> s;
         FileManager fm = new FileManager("triggers.txt");
         Sensor sensorAtual;
-       
+        string topic = "dataISMosquittoTest";
+        private MqttClient mcClient;
+        int idRecv = 0;
+
+        private void client_MqttMsgPublishReceived(object sender, MqttMsgPublishEventArgs e)
+        {
+            idRecv = int.Parse(Encoding.UTF8.GetString(e.Message));
+            JsonSensorData d = new JsonSensorData();
+            d.SensorID = 0;
+            d.start = "";
+            d.end = "";
+            d.AQID = idRecv;
+            string data = Newtonsoft.Json.JsonConvert.SerializeObject(d);
+            string res = Post("https://localhost:44327/api/aq/all", data, "application/json");
+            List<AQ> aux = new List<AQ>();
+            aux = Newtonsoft.Json.JsonConvert.DeserializeObject<List<AQ>>(res);
+            foreach (AQ a in aux)
+            {
+                Console.WriteLine(a.Id);
+                aqs.Add(a);
+            }
+            processaTriggers();
+        }
+
         public Form1()
         {
             InitializeComponent();
+            mcClient = new MqttClient(IPAddress.Parse("2001:41d0:a:fed0::1"));
+            mcClient.Connect(Guid.NewGuid().ToString());
+            if (!mcClient.IsConnected)
+            {
+                Console.WriteLine("Error connecting to message broker...");
+                return;
+            }
+            mcClient.Subscribe(new string[] { topic }, new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
+            mcClient.MqttMsgPublishReceived += client_MqttMsgPublishReceived;
         }
+
+        public void sendEmail(string body)
+        { 
+            MailMessage o = new MailMessage("IStesting@outlook.pt", "2171293@my.ipleiria.pt", "Alerta de valores", body);
+            NetworkCredential netCred = new NetworkCredential("IStesting@outlook.pt", "IsWebService");
+            SmtpClient smtpobj = new SmtpClient("SMTP.office365.com", 587);
+            smtpobj.EnableSsl = true;
+            smtpobj.Credentials = netCred;
+            smtpobj.Send(o);
+        }
+       
+
+        private void processaTriggers()
+        {
+            foreach (Trigger t in triggers)
+            {
+                foreach (AQ a in aqs)
+                {
+                    if (t.SensorID == a.SensorID)
+                    {
+                        if (t.campo == "Temperature")
+                        {
+                            if (t.operacao == "<")
+                            {
+                                if (a.Temperature < t.valor)
+                                {
+                                    sendEmail("A temperatura no sensor" + t.SensorID + " está < que " + t.valor);
+                                }
+                            }
+                            else if (t.operacao == ">")
+                            {
+                                if (a.Temperature > t.valor)
+                                {
+                                    sendEmail("A temperatura no sensor" + t.SensorID + " está > que " + t.valor);
+                                }
+                            }
+                            else
+                            {
+                                if (a.Temperature == t.valor)
+                                {
+                                    sendEmail("A temperatura no sensor" + t.SensorID + " está = a " + t.valor);
+                                }
+                            }
+                        }
+                        else if (t.campo == "Humidity")
+                        {
+                            if (t.operacao == "<")
+                            {
+                                if (a.Humidity < t.valor)
+                                {
+                                    sendEmail("A humidade no sensor" + t.SensorID + " está < que " + t.valor);
+                                }
+                            }
+                            else if (t.operacao == ">")
+                            {
+                                if (a.Humidity > t.valor)
+                                {
+                                    sendEmail("A humidade no sensor" + t.SensorID + " está > que " + t.valor);
+                                }
+                            }
+                            else
+                            {
+                                if (a.Humidity == t.valor)
+                                {
+                                    sendEmail("A humidade no sensor" + t.SensorID + " está = a " + t.valor);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (t.operacao == "<")
+                            {
+                                if (a.Battery < t.valor)
+                                {
+                                    sendEmail("A bateria do sensor" + t.SensorID + " está < que " + t.valor);
+                                }
+                            }
+                            else if (t.operacao == ">")
+                            {
+                                if (a.Battery > t.valor)
+                                {
+                                    sendEmail("A bateria do sensor" + t.SensorID + " está > que " + t.valor);
+                                }
+                            }
+                            else
+                            {
+                                if (a.Battery == t.valor)
+                                {
+                                    sendEmail("A bateria do sensor" + t.SensorID + " está = a " + t.valor);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            aqs.Clear();
+        }
+
         private void Form1_Load(object sender, EventArgs e)
         {
             s = GetAsync("https://localhost:44327/api/sensors/");
@@ -53,6 +186,7 @@ namespace AlertData
             t.SensorID = sensorAtual.SensorID;
             t.operacao = comboBoxOperacao.SelectedItem.ToString();
             t.campo = comboBoxCampos.SelectedItem.ToString();
+            t.valor = float.Parse(textBoxValor.Text);
             triggers.Add(t);
         }
         //todo config mqtt e fazer a função do evento dele (Acrescentar o obter aqs nas ultimas 24h??)
@@ -96,5 +230,6 @@ namespace AlertData
         {
             fm.writeTriggers(triggers);
         }
+
     }
 }
