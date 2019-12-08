@@ -50,7 +50,7 @@ namespace AlertData
         public Form1()
         {
             InitializeComponent();
-            mcClient = new MqttClient(IPAddress.Parse("2001:41d0:a:fed0::1"));
+            mcClient = new MqttClient("test.mosquitto.org");
             mcClient.Connect(Guid.NewGuid().ToString());
             if (!mcClient.IsConnected)
             {
@@ -68,7 +68,15 @@ namespace AlertData
             SmtpClient smtpobj = new SmtpClient("SMTP.office365.com", 587);
             smtpobj.EnableSsl = true;
             smtpobj.Credentials = netCred;
-            smtpobj.Send(o);
+            try
+            {
+                smtpobj.Send(o);
+            }catch (Exception e)
+            {
+                Console.WriteLine(o.ToString());
+                Console.WriteLine(body);
+            }
+
         }
        
 

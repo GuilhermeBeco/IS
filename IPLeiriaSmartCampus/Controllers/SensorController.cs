@@ -14,7 +14,7 @@ namespace IPLeiriaSmartCampus.Controllers
     public class SensorController : ApiController
     {
         static string connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["IPLeiriaSmartCampus.Properties.Settings.ConnStr"].ConnectionString;
-        MqttClient mcClient = new MqttClient(IPAddress.Parse("2001:41d0:a:fed0::1"));
+        MqttClient mcClient = new MqttClient("test.mosquitto.org");
 
         string topic =  "newSensorsInsertIS";
 
@@ -139,7 +139,7 @@ namespace IPLeiriaSmartCampus.Controllers
                         Console.WriteLine("Error connecting to message broker...");
 
                     }
-                    mcClient.Publish("data", Encoding.UTF8.GetBytes(sensor.SensorID.ToString()));
+                    mcClient.Publish("newSensorsInsertIS", Encoding.UTF8.GetBytes(sensor.SensorID.ToString()));
 
                     if (mcClient.IsConnected)
                     {

@@ -1,0 +1,1 @@
+[{"SensorID":1,"operacao":"=","campo":"Temperature","valor":22.0},{"SensorID":1,"operacao":">","campo":"Battery","valor":90.0},{"SensorID":2,"operacao":"<","campo":"Humidity","valor":20.0}]

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.Owin;
+using Microsoft.Owin.Security.OAuth;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http.Headers;
@@ -8,6 +10,9 @@ namespace IPLeiriaSmartCampus
 {
     public static class WebApiConfig
     {
+        public static string PublicClientId { get; private set; }
+        public static OAuthAuthorizationServerOptions OAuthOptions { get; private set; }
+
         public static void Register(HttpConfiguration config)
         {
             // Web API configuration and services

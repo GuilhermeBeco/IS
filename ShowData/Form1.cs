@@ -38,7 +38,7 @@ namespace ShowData
         public Form1()
         {
             InitializeComponent();
-            mcClient = new MqttClient(IPAddress.Parse("2001:41d0:a:fed0::1"));
+            mcClient = new MqttClient("test.mosquitto.org");
             mcClient.Connect(Guid.NewGuid().ToString());
             if (!mcClient.IsConnected)
             {
@@ -80,9 +80,10 @@ namespace ShowData
         }
         private void updateUI()
         {
+            //richTextBoxData.Text = "";
             foreach(AQ aq in aqs)
             {
-                richTextBoxData.Text += aq.ToString();
+               // richTextBoxData.Text += aq.ToString();
             }
             labelBatteryValue.Text = aqs[aqs.Count - 1].Battery.ToString();
             labelTemperatureValue.Text = aqs[aqs.Count - 1].Temperature.ToString();

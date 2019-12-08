@@ -1,0 +1,14 @@
+C:\Users\Beco\source\repos\IS\AlertData\bin\Debug\AlertData.exe.config
+C:\Users\Beco\source\repos\IS\AlertData\bin\Debug\AlertData.exe
+C:\Users\Beco\source\repos\IS\AlertData\bin\Debug\AlertData.pdb
+C:\Users\Beco\source\repos\IS\AlertData\bin\Debug\M2Mqtt.Net.dll
+C:\Users\Beco\source\repos\IS\AlertData\bin\Debug\Newtonsoft.Json.dll
+C:\Users\Beco\source\repos\IS\AlertData\bin\Debug\M2Mqtt.Net.pdb
+C:\Users\Beco\source\repos\IS\AlertData\bin\Debug\Newtonsoft.Json.xml
+C:\Users\Beco\source\repos\IS\AlertData\obj\Debug\AlertData.csprojAssemblyReference.cache
+C:\Users\Beco\source\repos\IS\AlertData\obj\Debug\AlertData.Form1.resources
+C:\Users\Beco\source\repos\IS\AlertData\obj\Debug\AlertData.Properties.Resources.resources
+C:\Users\Beco\source\repos\IS\AlertData\obj\Debug\AlertData.csproj.GenerateResource.cache
+C:\Users\Beco\source\repos\IS\AlertData\obj\Debug\AlertData.csproj.CopyComplete
+C:\Users\Beco\source\repos\IS\AlertData\obj\Debug\AlertData.exe
+C:\Users\Beco\source\repos\IS\AlertData\obj\Debug\AlertData.pdb

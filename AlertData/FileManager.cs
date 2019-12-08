@@ -18,29 +18,23 @@ namespace AlertData
         public List<Trigger> getTriggers()
         {
             readFile();
-            List<Trigger> triggers = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Trigger>>(txtFile);
+          List<Trigger> triggers = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Trigger>>(txtFile);
             return triggers;
         }
         public void writeTriggers(List<Trigger> triggers)
         {
-            string s = "";
-            foreach (Trigger t in triggers)
-            {
-                s += Newtonsoft.Json.JsonConvert.SerializeObject(t);
-                writeFile(s);
-            }
-            
+            string s= Newtonsoft.Json.JsonConvert.SerializeObject(triggers);
+            writeFile(s);   
         }
 
         private void readFile()
-        {
-            
-            var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
-            using (var streamReader = new StreamReader(fileStream, Encoding.UTF8))
-            {
-                txtFile = streamReader.ReadToEnd();
-            }
-
+        { 
+                var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+                using (var streamReader = new StreamReader(fileStream, Encoding.UTF8))
+                {
+                    txtFile = streamReader.ReadToEnd();
+                }
+           
         }
         private void readByLine()
         {
@@ -57,7 +51,7 @@ namespace AlertData
 
         private void writeFile(string s)
         {
-            using (StreamWriter outputFile = new StreamWriter(filePath, true))
+            using (StreamWriter outputFile = new StreamWriter(filePath))
             {
                 outputFile.WriteLine(s);
             }
