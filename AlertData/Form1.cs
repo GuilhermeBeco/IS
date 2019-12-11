@@ -50,7 +50,7 @@ namespace AlertData
         public Form1()
         {
             InitializeComponent();
-            mcClient = new MqttClient("test.mosquitto.org");
+            mcClient = new MqttClient(IPAddress.Parse("127.0.0.1"));
             mcClient.Connect(Guid.NewGuid().ToString());
             if (!mcClient.IsConnected)
             {
@@ -61,9 +61,9 @@ namespace AlertData
             mcClient.MqttMsgPublishReceived += client_MqttMsgPublishReceived;
         }
 
-        public void sendEmail(string body)
+        public void sendEmail(string body,string email)
         { 
-            MailMessage o = new MailMessage("IStesting@outlook.pt", "2171293@my.ipleiria.pt", "Alerta de valores", body);
+            MailMessage o = new MailMessage("IStesting@outlook.pt", email, "Alerta de valores", body);
             NetworkCredential netCred = new NetworkCredential("IStesting@outlook.pt", "IsWebService");
             SmtpClient smtpobj = new SmtpClient("SMTP.office365.com", 587);
             smtpobj.EnableSsl = true;
@@ -94,21 +94,21 @@ namespace AlertData
                             {
                                 if (a.Temperature < t.valor)
                                 {
-                                    sendEmail("A temperatura no sensor" + t.SensorID + " está < que " + t.valor);
+                                    sendEmail("A temperatura no sensor" + t.SensorID + " está < que " + t.valor,t.email);
                                 }
                             }
                             else if (t.operacao == ">")
                             {
                                 if (a.Temperature > t.valor)
                                 {
-                                    sendEmail("A temperatura no sensor" + t.SensorID + " está > que " + t.valor);
+                                    sendEmail("A temperatura no sensor" + t.SensorID + " está > que " + t.valor, t.email);
                                 }
                             }
                             else
                             {
                                 if (a.Temperature == t.valor)
                                 {
-                                    sendEmail("A temperatura no sensor" + t.SensorID + " está = a " + t.valor);
+                                    sendEmail("A temperatura no sensor" + t.SensorID + " está = a " + t.valor, t.email);
                                 }
                             }
                         }
@@ -118,21 +118,21 @@ namespace AlertData
                             {
                                 if (a.Humidity < t.valor)
                                 {
-                                    sendEmail("A humidade no sensor" + t.SensorID + " está < que " + t.valor);
+                                    sendEmail("A humidade no sensor" + t.SensorID + " está < que " + t.valor, t.email);
                                 }
                             }
                             else if (t.operacao == ">")
                             {
                                 if (a.Humidity > t.valor)
                                 {
-                                    sendEmail("A humidade no sensor" + t.SensorID + " está > que " + t.valor);
+                                    sendEmail("A humidade no sensor" + t.SensorID + " está > que " + t.valor, t.email);
                                 }
                             }
                             else
                             {
                                 if (a.Humidity == t.valor)
                                 {
-                                    sendEmail("A humidade no sensor" + t.SensorID + " está = a " + t.valor);
+                                    sendEmail("A humidade no sensor" + t.SensorID + " está = a " + t.valor, t.email);
                                 }
                             }
                         }
@@ -142,21 +142,21 @@ namespace AlertData
                             {
                                 if (a.Battery < t.valor)
                                 {
-                                    sendEmail("A bateria do sensor" + t.SensorID + " está < que " + t.valor);
+                                    sendEmail("A bateria do sensor" + t.SensorID + " está < que " + t.valor, t.email);
                                 }
                             }
                             else if (t.operacao == ">")
                             {
                                 if (a.Battery > t.valor)
                                 {
-                                    sendEmail("A bateria do sensor" + t.SensorID + " está > que " + t.valor);
+                                    sendEmail("A bateria do sensor" + t.SensorID + " está > que " + t.valor, t.email);
                                 }
                             }
                             else
                             {
                                 if (a.Battery == t.valor)
                                 {
-                                    sendEmail("A bateria do sensor" + t.SensorID + " está = a " + t.valor);
+                                    sendEmail("A bateria do sensor" + t.SensorID + " está = a " + t.valor, t.email);
                                 }
                             }
                         }
@@ -195,6 +195,7 @@ namespace AlertData
             t.operacao = comboBoxOperacao.SelectedItem.ToString();
             t.campo = comboBoxCampos.SelectedItem.ToString();
             t.valor = float.Parse(textBoxValor.Text);
+            t.email = textBoxEmail.Text;
             triggers.Add(t);
         }
         //todo config mqtt e fazer a função do evento dele (Acrescentar o obter aqs nas ultimas 24h??)

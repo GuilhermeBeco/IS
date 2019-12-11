@@ -38,6 +38,8 @@
             this.buttonSaveAll = new System.Windows.Forms.Button();
             this.label4 = new System.Windows.Forms.Label();
             this.textBoxValor = new System.Windows.Forms.TextBox();
+            this.label5 = new System.Windows.Forms.Label();
+            this.textBoxEmail = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // label1
@@ -101,7 +103,7 @@
             // 
             // buttonCreateTrigger
             // 
-            this.buttonCreateTrigger.Location = new System.Drawing.Point(273, 192);
+            this.buttonCreateTrigger.Location = new System.Drawing.Point(273, 227);
             this.buttonCreateTrigger.Name = "buttonCreateTrigger";
             this.buttonCreateTrigger.Size = new System.Drawing.Size(74, 23);
             this.buttonCreateTrigger.TabIndex = 6;
@@ -110,7 +112,7 @@
             // 
             // buttonSaveAll
             // 
-            this.buttonSaveAll.Location = new System.Drawing.Point(353, 192);
+            this.buttonSaveAll.Location = new System.Drawing.Point(353, 227);
             this.buttonSaveAll.Name = "buttonSaveAll";
             this.buttonSaveAll.Size = new System.Drawing.Size(57, 23);
             this.buttonSaveAll.TabIndex = 7;
@@ -133,11 +135,29 @@
             this.textBoxValor.Size = new System.Drawing.Size(137, 20);
             this.textBoxValor.TabIndex = 9;
             // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(208, 187);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(38, 13);
+            this.label5.TabIndex = 10;
+            this.label5.Text = "Email: ";
+            // 
+            // textBoxEmail
+            // 
+            this.textBoxEmail.Location = new System.Drawing.Point(273, 187);
+            this.textBoxEmail.Name = "textBoxEmail";
+            this.textBoxEmail.Size = new System.Drawing.Size(137, 20);
+            this.textBoxEmail.TabIndex = 11;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.textBoxEmail);
+            this.Controls.Add(this.label5);
             this.Controls.Add(this.textBoxValor);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.buttonSaveAll);
@@ -169,6 +189,8 @@
         private System.Windows.Forms.Button buttonSaveAll;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.TextBox textBoxValor;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.TextBox textBoxEmail;
     }
 }
 

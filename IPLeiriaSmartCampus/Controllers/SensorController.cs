@@ -14,7 +14,7 @@ namespace IPLeiriaSmartCampus.Controllers
     public class SensorController : ApiController
     {
         static string connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["IPLeiriaSmartCampus.Properties.Settings.ConnStr"].ConnectionString;
-        MqttClient mcClient = new MqttClient("test.mosquitto.org");
+        MqttClient mcClient = new MqttClient(IPAddress.Parse("127.0.0.1"));
 
         string topic =  "newSensorsInsertIS";
 

@@ -38,7 +38,7 @@ namespace ShowData
         public Form1()
         {
             InitializeComponent();
-            mcClient = new MqttClient("test.mosquitto.org");
+            mcClient = new MqttClient(IPAddress.Parse("127.0.0.1"));
             mcClient.Connect(Guid.NewGuid().ToString());
             if (!mcClient.IsConnected)
             {
@@ -73,6 +73,7 @@ namespace ShowData
             string res = Post("https://localhost:44327/api/aq/all",data,"application/json");
             aqs.Clear();
             aqs= Newtonsoft.Json.JsonConvert.DeserializeObject<List<AQ>>(res);
+            richTextBoxData.Text = "";
             updateUI();
             
            
@@ -80,10 +81,10 @@ namespace ShowData
         }
         private void updateUI()
         {
-            //richTextBoxData.Text = "";
+            
             foreach(AQ aq in aqs)
             {
-               // richTextBoxData.Text += aq.ToString();
+               richTextBoxData.Text += aq.ToString();
             }
             labelBatteryValue.Text = aqs[aqs.Count - 1].Battery.ToString();
             labelTemperatureValue.Text = aqs[aqs.Count - 1].Temperature.ToString();
