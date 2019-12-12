@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography;
@@ -61,57 +62,28 @@ namespace IPLeiriaSmartCampus.Controllers
 
 
         [Route("api/users")]
-        public IHttpActionResult GetAllUsers()
+        [HttpPost]
+        public IHttpActionResult GetAllUsers(string cred)
         {
             List<User> users = new List<User>();
-            string query = "Select username,name from users";
-            using (SqlConnection connection = new SqlConnection(connectionString))
+            if (cred != null && ValidateUser(cred))
             {
-                SqlCommand command = new SqlCommand(query, connection);
-                try
-                {
-                    connection.Open();
-                    SqlDataReader reader = command.ExecuteReader();
-                    while (reader.Read())
-                    {
-                        User u = new User();
-                        u.Username = reader["username"].ToString();
-                        u.Name = reader["name"].ToString();
-                        users.Add(u);
-                    }
-                    reader.Close();
-                    connection.Close();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
-                }
-
-            }
-            return Ok(users);
-        }
-
-        [Route("api/users")]
-        [HttpPost]
-        public IHttpActionResult CreateUser(UserMapper user)
-        {
-            int rows = 0;
-            if (findUser(user.Username) == null && user.Password == user.PasswordConfirmation) {
-                string query = "insert into users (username,password,name) values (@username,@password,@name) ";
+                string query = "Select username,name from users";
                 using (SqlConnection connection = new SqlConnection(connectionString))
                 {
-                    var sha1 = new SHA1CryptoServiceProvider();
-                    var data = Encoding.UTF8.GetBytes(user.Password);
-                    byte[] sha1data = sha1.ComputeHash(data);
-                    string hashedPass = Encoding.UTF8.GetString(sha1data);
                     SqlCommand command = new SqlCommand(query, connection);
-                    command.Parameters.AddWithValue("@username", user.Username);
-                    command.Parameters.AddWithValue("@name", user.Name);
-                    command.Parameters.AddWithValue("@password", hashedPass);
                     try
                     {
                         connection.Open();
-                        rows += command.ExecuteNonQuery();
+                        SqlDataReader reader = command.ExecuteReader();
+                        while (reader.Read())
+                        {
+                            User u = new User();
+                            u.Username = reader["username"].ToString();
+                            u.Name = reader["name"].ToString();
+                            users.Add(u);
+                        }
+                        reader.Close();
                         connection.Close();
                     }
                     catch (Exception ex)
@@ -120,12 +92,51 @@ namespace IPLeiriaSmartCampus.Controllers
                     }
 
                 }
-                return Ok(rows);
+                return Ok(users);
             }
-            else
+            return BadRequest("Não Autenticado");
+        }
+
+        [Route("api/users")]
+        [HttpPost]
+        public IHttpActionResult CreateUser(UserMapper user)
+        {
+            int rows = 0;
+            if (user.cred != null && ValidateUser(user.cred))
             {
-                return BadRequest("O username já existe ou a password não está confirmada");
+                if (findUser(user.Username) == null && user.Password == user.PasswordConfirmation)
+                {
+                    string query = "insert into users (username,password,name) values (@username,@password,@name) ";
+                    using (SqlConnection connection = new SqlConnection(connectionString))
+                    {
+                        var sha1 = new SHA1CryptoServiceProvider();
+                        var data = Encoding.UTF8.GetBytes(user.Password);
+                        byte[] sha1data = sha1.ComputeHash(data);
+                        string hashedPass = Encoding.UTF8.GetString(sha1data);
+                        SqlCommand command = new SqlCommand(query, connection);
+                        command.Parameters.AddWithValue("@username", user.Username);
+                        command.Parameters.AddWithValue("@name", user.Name);
+                        command.Parameters.AddWithValue("@password", hashedPass);
+                        try
+                        {
+                            connection.Open();
+                            rows += command.ExecuteNonQuery();
+                            connection.Close();
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex.Message);
+                        }
+
+                    }
+                    return Ok(rows);
+                }
+                else
+                {
+                    return BadRequest("O username já existe ou a password não está confirmada");
+                }
             }
+            return BadRequest("Não Autenticado");
         }
       
 
@@ -181,6 +192,55 @@ namespace IPLeiriaSmartCampus.Controllers
             }
         }
 
-       
+        public static bool ValidateUser(string ba)
+        {
+            string decoded;
+            byte[] data = System.Convert.FromBase64String(ba);
+            decoded = System.Text.UTF8Encoding.UTF8.GetString(data);
+            string[] cred = decoded.Split(':');
+            string username = cred[0];
+            string password = cred[1];
+            User user = findUser(username);
+            if (user != null)
+            {
+                var sha1 = new SHA1CryptoServiceProvider();
+                var dataHash = Encoding.UTF8.GetBytes(password);
+                byte[] sha1data = sha1.ComputeHash(dataHash);
+                string hashedPass = Encoding.UTF8.GetString(sha1data);
+
+                Debug.WriteLine("hashedPass do creed: "+hashedPass+" | hashedPass do user: "+ Encoding.UTF8.GetString(Encoding.UTF8.GetBytes(user.Password)));
+                if (user.Password.Equals(hashedPass))
+                {
+                    return true;
+                }
+                return false;
+            }
+            return false;
+        }
+        [Route("api/users/auth")]
+        [HttpPost]
+        public IHttpActionResult authUser(AuthModel model)
+        {
+            bool res = false;
+            User user = findUser(model.username);
+            if (user != null)
+            {
+                var sha1 = new SHA1CryptoServiceProvider();
+                var dataHash = Encoding.UTF8.GetBytes(model.password);
+                byte[] sha1data = sha1.ComputeHash(dataHash);
+                string hashedPass = Encoding.UTF8.GetString(sha1data);
+
+                Debug.WriteLine("hashedPass do creed: " + hashedPass + " | hashedPass do user: " + Encoding.UTF8.GetString(Encoding.UTF8.GetBytes(user.Password)));
+                if (user.Password.Equals(hashedPass))
+                {
+                    res = true;
+                    return Ok(res);
+                }
+                return Ok(res);
+            }
+            return Ok(res);
+        }
+
+
     }
 }

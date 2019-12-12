@@ -13,5 +13,7 @@ namespace IPLeiriaSmartCampus.Models
         public float Humidity { get; set; }
         public int Battery { get; set; }
         public String Timestamp { get; set; }
+
+        public string cred { get; set; }
     }
 }

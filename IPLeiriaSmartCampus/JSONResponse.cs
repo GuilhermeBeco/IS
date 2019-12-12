@@ -11,5 +11,6 @@ namespace IPLeiriaSmartCampus
         public string start { get; set;}
         public string end { get; set;}
         public int AQID { get; set;}
+        public string cred { get; set; }
     }
 }

@@ -19,79 +19,89 @@ namespace IPLeiriaSmartCampus.Controllers
         string topic =  "newSensorsInsertIS";
 
         [Route("api/sensors/")]
-        public IHttpActionResult GetAllSensors()
+        [HttpPost]
+        public IHttpActionResult GetAllSensors(string cred)
         {
             List<Sensor> sensors = new List<Sensor>();
             string query = "Select * from sensor";
-            using (SqlConnection connection = new SqlConnection(connectionString))
+            if (cred != null && UserController.ValidateUser(cred))
             {
-                SqlCommand command = new SqlCommand(query, connection);
-                try
+                using (SqlConnection connection = new SqlConnection(connectionString))
                 {
-                    connection.Open();
-                    SqlDataReader reader = command.ExecuteReader();
-                    while (reader.Read())
+                    SqlCommand command = new SqlCommand(query, connection);
+                    try
                     {
-                        Sensor sensor = new Sensor();
-                        sensor.SensorID = int.Parse(reader["id"].ToString());
-                        sensor.Local = reader["local"].ToString();
-                        if (reader["username"].ToString().Equals(""))
+                        connection.Open();
+                        SqlDataReader reader = command.ExecuteReader();
+                        while (reader.Read())
                         {
-                            sensor.username = "N/A";
-                        }
-                        else
-                        {
-                            sensor.username = reader["username"].ToString();
-                        }
+                            Sensor sensor = new Sensor();
+                            sensor.SensorID = int.Parse(reader["id"].ToString());
+                            sensor.Local = reader["local"].ToString();
+                            if (reader["username"].ToString().Equals(""))
+                            {
+                                sensor.username = "N/A";
+                            }
+                            else
+                            {
+                                sensor.username = reader["username"].ToString();
+                            }
 
-                        sensors.Add(sensor);
+                            sensors.Add(sensor);
+                        }
+                        reader.Close();
+                        connection.Close();
                     }
-                    reader.Close();
-                    connection.Close();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+
                 }
 
+                return Ok(sensors);//Respecting HTTP errors (200 OK)
             }
-
-            return Ok(sensors);//Respecting HTTP errors (200 OK)
+            return BadRequest("Não Autenticado");
         }
-        
+
         [Route("api/sensors/all")]
         [HttpPost]
-        public IHttpActionResult GetAllSensors(string SensorID)
+        public IHttpActionResult GetAllSensors(GetAllSensors response)
         {
+            //todo orientar o realtime do show data e do alert data para sensores novos
             List<Sensor> sensors = new List<Sensor>();
-            string query = "Select * from sensor where id >= @id";
-            using (SqlConnection connection = new SqlConnection(connectionString))
+            if (response.cred != null && UserController.ValidateUser(response.cred))
             {
-                SqlCommand command = new SqlCommand(query, connection);
-                try
+                string query = "Select * from sensor where id >= @id";
+                using (SqlConnection connection = new SqlConnection(connectionString))
                 {
-                    connection.Open();
-                    command.Parameters.AddWithValue("@id", int.Parse(SensorID));
-                    SqlDataReader reader = command.ExecuteReader();
-                    while (reader.Read())
+                    SqlCommand command = new SqlCommand(query, connection);
+                    try
                     {
-                        Sensor sensor = new Sensor();
-                        sensor.SensorID = int.Parse(reader["id"].ToString());
-                        sensor.Local = reader["local"].ToString();
+                        connection.Open();
+                        command.Parameters.AddWithValue("@id", response.SensorID);
+                        SqlDataReader reader = command.ExecuteReader();
+                        while (reader.Read())
+                        {
+                            Sensor sensor = new Sensor();
+                            sensor.SensorID = int.Parse(reader["id"].ToString());
+                            sensor.Local = reader["local"].ToString();
 
-                        sensors.Add(sensor);
+                            sensors.Add(sensor);
+                        }
+                        reader.Close();
+                        connection.Close();
                     }
-                    reader.Close();
-                    connection.Close();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+
                 }
 
+                return Ok(sensors);//Respecting HTTP errors (200 OK)
             }
-
-            return Ok(sensors);//Respecting HTTP errors (200 OK)
+            return BadRequest("Não Autenticado");
         }
 
         [Route("api/sensors/")]
@@ -99,61 +109,64 @@ namespace IPLeiriaSmartCampus.Controllers
         public IHttpActionResult PostSensor(Sensor sensor)
         {
             int rows = 0;
-
-            if (!SensorExists(sensor.SensorID))
-                
+            if (sensor.cred != null && UserController.ValidateUser(sensor.cred))
             {
-                string query = "Insert into dbo.sensor (username, id, local) values (@username,@id, @local)";
-                using (SqlConnection connection = new SqlConnection(connectionString))
+                if (!SensorExists(sensor.SensorID))
+
                 {
-                    SqlCommand command = new SqlCommand(query, connection);
-                    command.Parameters.AddWithValue("@id", sensor.SensorID);
-                    command.Parameters.AddWithValue("@local", sensor.Local);
-                    if (UserController.findUser(sensor.username) != null)
+                    string query = "Insert into dbo.sensor (username, id, local) values (@username,@id, @local)";
+                    using (SqlConnection connection = new SqlConnection(connectionString))
                     {
-                        command.Parameters.AddWithValue("@username", sensor.username);
-                    }
-                    else if(UserController.findUser("N/A") == null)
-                    {
-                        UserController.generateEmptyUser();
-                        command.Parameters.AddWithValue("@username", "N/A");
-                    }
-                    else
-                    {
-                        command.Parameters.AddWithValue("@username", "N/A");
-                    }
+                        SqlCommand command = new SqlCommand(query, connection);
+                        command.Parameters.AddWithValue("@id", sensor.SensorID);
+                        command.Parameters.AddWithValue("@local", sensor.Local);
+                        if (UserController.findUser(sensor.username) != null)
+                        {
+                            command.Parameters.AddWithValue("@username", sensor.username);
+                        }
+                        else if (UserController.findUser("N/A") == null)
+                        {
+                            UserController.generateEmptyUser();
+                            command.Parameters.AddWithValue("@username", "N/A");
+                        }
+                        else
+                        {
+                            command.Parameters.AddWithValue("@username", "N/A");
+                        }
 
-                    try
-                    {
-                        connection.Open();
-                        rows += command.ExecuteNonQuery();
-                        connection.Close();
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine(ex.Message);
-                    }
-                   mcClient.Connect(Guid.NewGuid().ToString());
-                    if (!mcClient.IsConnected)
-                    {
-                        Console.WriteLine("Error connecting to message broker...");
+                        try
+                        {
+                            connection.Open();
+                            rows += command.ExecuteNonQuery();
+                            connection.Close();
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex.Message);
+                        }
+                        mcClient.Connect(Guid.NewGuid().ToString());
+                        if (!mcClient.IsConnected)
+                        {
+                            Console.WriteLine("Error connecting to message broker...");
+
+                        }
+                        mcClient.Publish("newSensorsInsertIS", Encoding.UTF8.GetBytes(sensor.SensorID.ToString()));
+
+                        if (mcClient.IsConnected)
+                        {
+                            mcClient.Unsubscribe(new string[] { topic }); //Put this in a button to see notify!
+                            mcClient.Disconnect();
+                        }
 
                     }
-                    mcClient.Publish("newSensorsInsertIS", Encoding.UTF8.GetBytes(sensor.SensorID.ToString()));
-
-                    if (mcClient.IsConnected)
-                    {
-                        mcClient.Unsubscribe(new string[] { topic }); //Put this in a button to see notify!
-                        mcClient.Disconnect();
-                    }
-
+                    return Ok(rows);//Respecting HTTP errors (200 OK)
                 }
-                return Ok(rows);//Respecting HTTP errors (200 OK)
+                else
+                {
+                    return BadRequest("Sensor already exists");
+                }
             }
-            else
-            {
-                return BadRequest("Sensor already exists");
-            }
+            return BadRequest("Não Autenticado");
         }
 
         public static bool SensorExists(int id)
@@ -225,32 +238,37 @@ namespace IPLeiriaSmartCampus.Controllers
         public IHttpActionResult PutUser(JsonResponseSensor response)
         {
             int rows = 0;
-            if (!hasUser(response.sensor) && SensorExists(response.sensor) && UserController.findUser(response.username) != null) {              
-                string query = "Update sensor set username = @user where id = @id";
-                using (SqlConnection connection = new SqlConnection(connectionString))
-                {
-                    SqlCommand command = new SqlCommand(query, connection);
-                    command.Parameters.AddWithValue("@id", response.sensor);
-                    command.Parameters.AddWithValue("@user", response.username);
-
-                    try
-                    {
-                        connection.Open();
-                        rows += command.ExecuteNonQuery();
-                        connection.Close();
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine(ex.Message);
-                    }
-
-                }
-                return Ok(rows);//Respecting HTTP errors (200 OK)
-            }
-            else
+            if (response.cred != null && UserController.ValidateUser(response.cred))
             {
-                return BadRequest("O sensor já tem um utilizador ou o sensor não existe ou o utilizador não existe");
+                if (!hasUser(response.sensor) && SensorExists(response.sensor) && UserController.findUser(response.username) != null)
+                {
+                    string query = "Update sensor set username = @user where id = @id";
+                    using (SqlConnection connection = new SqlConnection(connectionString))
+                    {
+                        SqlCommand command = new SqlCommand(query, connection);
+                        command.Parameters.AddWithValue("@id", response.sensor);
+                        command.Parameters.AddWithValue("@user", response.username);
+
+                        try
+                        {
+                            connection.Open();
+                            rows += command.ExecuteNonQuery();
+                            connection.Close();
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex.Message);
+                        }
+
+                    }
+                    return Ok(rows);//Respecting HTTP errors (200 OK)
+                }
+                else
+                {
+                    return BadRequest("O sensor já tem um utilizador ou o sensor não existe ou o utilizador não existe");
+                }
             }
+            return BadRequest("Não Autenticado");
         }
 
     }

@@ -110,6 +110,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Controllers\AuthModel.cs" />
     <Compile Include="Controllers\UserController.cs" />
     <Compile Include="JsonResponseSensor.cs" />
     <Compile Include="JSONResponse.cs" />
@@ -120,6 +121,8 @@
     </Compile>
     <Compile Include="Models\AQMap.cs" />
     <Compile Include="Models\AQ.cs" />
+    <Compile Include="Models\DeleteAQMap.cs" />
+    <Compile Include="Models\GetAllSensors.cs" />
     <Compile Include="Models\User.cs" />
     <Compile Include="Models\Sensor.cs" />
     <Compile Include="Models\UserMapper.cs" />

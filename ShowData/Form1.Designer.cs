@@ -38,6 +38,12 @@
             this.labelData = new System.Windows.Forms.Label();
             this.labelDataValue = new System.Windows.Forms.Label();
             this.richTextBoxData = new System.Windows.Forms.RichTextBox();
+            this.textBoxUsername = new System.Windows.Forms.TextBox();
+            this.textBoxPassword = new System.Windows.Forms.TextBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
+            this.button1 = new System.Windows.Forms.Button();
+            this.labelLogin = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // comboBoxSensors
@@ -78,7 +84,7 @@
             // labelHumidityValue
             // 
             this.labelHumidityValue.AutoSize = true;
-            this.labelHumidityValue.Location = new System.Drawing.Point(547, 73);
+            this.labelHumidityValue.Location = new System.Drawing.Point(575, 73);
             this.labelHumidityValue.Name = "labelHumidityValue";
             this.labelHumidityValue.Size = new System.Drawing.Size(13, 13);
             this.labelHumidityValue.TabIndex = 4;
@@ -105,16 +111,16 @@
             // labelData
             // 
             this.labelData.AutoSize = true;
-            this.labelData.Location = new System.Drawing.Point(453, 116);
+            this.labelData.Location = new System.Drawing.Point(470, 116);
             this.labelData.Name = "labelData";
-            this.labelData.Size = new System.Drawing.Size(71, 13);
+            this.labelData.Size = new System.Drawing.Size(80, 13);
             this.labelData.TabIndex = 7;
-            this.labelData.Text = "Data e Hora: ";
+            this.labelData.Text = "Date and Time:";
             // 
             // labelDataValue
             // 
             this.labelDataValue.AutoSize = true;
-            this.labelDataValue.Location = new System.Drawing.Point(523, 116);
+            this.labelDataValue.Location = new System.Drawing.Point(575, 116);
             this.labelDataValue.Name = "labelDataValue";
             this.labelDataValue.Size = new System.Drawing.Size(13, 13);
             this.labelDataValue.TabIndex = 8;
@@ -128,11 +134,68 @@
             this.richTextBoxData.TabIndex = 9;
             this.richTextBoxData.Text = "";
             // 
+            // textBoxUsername
+            // 
+            this.textBoxUsername.Location = new System.Drawing.Point(906, 70);
+            this.textBoxUsername.Name = "textBoxUsername";
+            this.textBoxUsername.Size = new System.Drawing.Size(136, 20);
+            this.textBoxUsername.TabIndex = 10;
+            // 
+            // textBoxPassword
+            // 
+            this.textBoxPassword.Location = new System.Drawing.Point(906, 109);
+            this.textBoxPassword.Name = "textBoxPassword";
+            this.textBoxPassword.Size = new System.Drawing.Size(136, 20);
+            this.textBoxPassword.TabIndex = 12;
+            this.textBoxPassword.UseSystemPasswordChar = true;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(825, 73);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(58, 13);
+            this.label1.TabIndex = 13;
+            this.label1.Text = "Username:";
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(825, 116);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(56, 13);
+            this.label2.TabIndex = 14;
+            this.label2.Text = "Password:";
+            // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(931, 155);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(75, 23);
+            this.button1.TabIndex = 15;
+            this.button1.Text = "Login";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
+            // labelLogin
+            // 
+            this.labelLogin.AutoSize = true;
+            this.labelLogin.Location = new System.Drawing.Point(949, 195);
+            this.labelLogin.Name = "labelLogin";
+            this.labelLogin.Size = new System.Drawing.Size(0, 13);
+            this.labelLogin.TabIndex = 16;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(615, 405);
+            this.ClientSize = new System.Drawing.Size(1070, 405);
+            this.Controls.Add(this.labelLogin);
+            this.Controls.Add(this.button1);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.label1);
+            this.Controls.Add(this.textBoxPassword);
+            this.Controls.Add(this.textBoxUsername);
             this.Controls.Add(this.richTextBoxData);
             this.Controls.Add(this.labelDataValue);
             this.Controls.Add(this.labelData);
@@ -163,6 +226,12 @@
         private System.Windows.Forms.Label labelData;
         private System.Windows.Forms.Label labelDataValue;
         private System.Windows.Forms.RichTextBox richTextBoxData;
+        private System.Windows.Forms.TextBox textBoxUsername;
+        private System.Windows.Forms.TextBox textBoxPassword;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Label labelLogin;
     }
 }
 

@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Web.Http;
 using uPLibrary.Networking.M2Mqtt;
@@ -13,7 +14,7 @@ using uPLibrary.Networking.M2Mqtt.Messages;
 
 namespace IPLeiriaSmartCampus.Controllers
 {
-  
+
     public class AQController : ApiController
     {
         List<AQMap> aqsSemSensor = new List<AQMap>();
@@ -23,8 +24,9 @@ namespace IPLeiriaSmartCampus.Controllers
         string[] topics = { "dataISMosquittoTest" };
 
 
- 
+
         [Route("api/aq/")]
+
         public IHttpActionResult GetLastAQ()
         {
             AQ aq = new AQ();
@@ -60,12 +62,10 @@ namespace IPLeiriaSmartCampus.Controllers
         }
 
         [Route("api/ok")]
-        public IHttpActionResult ServerStatus(int sensor)
+        public IHttpActionResult ServerStatus()
         {
             return Ok();
         }
-
-        // owin (tokens)
 
         [Route("api/aq/{sensor}")]
         public IHttpActionResult GetLastAQSensor(int sensor)
@@ -106,120 +106,129 @@ namespace IPLeiriaSmartCampus.Controllers
 
         [Route("api/aq/all")]
         [HttpPost]
-        
+
         public IHttpActionResult GetAllAqSensorFilter(JSONResponse response)
         {
             List<AQ> aqs = new List<AQ>();
             string query = "";
             int aqId = 0;
             bool filter = false;
-            if (response.start != "" && response.end != "")
+            if (response.cred != null && UserController.ValidateUser(response.cred))
             {
-                if (response.AQID != 0)
+                if (response.start != "" && response.end != "")
                 {
-                    if(response.SensorID!=0)
-                        query = "Select  * from AQ where sensorid = @sensor and id >= @id and timestamp between @start and @end order by timestamp desc ";
-                    else
-                        query = "Select  * from AQ where id >= @id and timestamp between @start and @end order by timestamp desc ";
-                    aqId = response.AQID;
-                }
-                else
-                {
-                    if(response.SensorID!=0)
-                        query = "Select  * from AQ where sensorid = @sensor and timestamp between @start and @end order by timestamp desc ";
-                    else
-                        query = "Select  * from AQ where timestamp between @start and @end order by timestamp desc ";
-                }
-                filter = true;
-            }
-            else
-            {
-                if (response.AQID != 0)
-                {
-                    if(response.SensorID!=0)
-                        query = "Select * from AQ  where sensorid = @sensor and id >= @id";
-                    else
-                        query = "Select * from AQ  where id >= @id";
-                    aqId = response.AQID;
-                }
-                else
-                {   
-                    if(response.SensorID!=0)
-                        query = "Select * from AQ  where sensorid = @sensor ";
-                    else
-                        query = "Select * from AQ ";
-                }
-                filter = false;
-            }
-           
-            using (SqlConnection connection = new SqlConnection(connectionString))
-            {
-                SqlCommand command = new SqlCommand(query, connection);
-                if (response.SensorID != 0) 
-                    command.Parameters.AddWithValue("@sensor", response.SensorID);
-                if (filter)
-                {
-                    System.DateTime dtDateTimeStart = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
-                    dtDateTimeStart = dtDateTimeStart.AddSeconds(double.Parse(response.start)).ToLocalTime();
-                    System.DateTime dtDateTimeEnd = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
-                    dtDateTimeEnd = dtDateTimeEnd.AddSeconds(double.Parse(response.end)).ToLocalTime();
-                    command.Parameters.AddWithValue("@start", dtDateTimeStart);
-                    command.Parameters.AddWithValue("@end", dtDateTimeEnd);
-                }
-                if (aqId != 0)
-                {
-                    command.Parameters.AddWithValue("@id", aqId);
-                }
-                try
-                {
-                    connection.Open();
-                    SqlDataReader reader = command.ExecuteReader();
-                    while (reader.Read())
+                    if (response.AQID != 0)
                     {
-                        AQ aq = new AQ();
-                        aq.Id = int.Parse(reader["id"].ToString());
-                        aq.SensorID = int.Parse(reader["SensorID"].ToString());
-                        aq.Temperature = float.Parse(reader["Temperature"].ToString());
-                        aq.Humidity = float.Parse(reader["Humidity"].ToString());
-                        aq.Battery = int.Parse(reader["Battery"].ToString());
-                        aq.Timestamp = DateTime.Parse(reader["Timestamp"].ToString());
-                        aqs.Add(aq);
+                        if (response.SensorID != 0)
+                            query = "Select  * from AQ where sensorid = @sensor and id >= @id and timestamp between @start and @end order by timestamp desc ";
+                        else
+                            query = "Select  * from AQ where id >= @id and timestamp between @start and @end order by timestamp desc ";
+                        aqId = response.AQID;
                     }
-                    reader.Close();
-                    connection.Close();
+                    else
+                    {
+                        if (response.SensorID != 0)
+                            query = "Select  * from AQ where sensorid = @sensor and timestamp between @start and @end order by timestamp desc ";
+                        else
+                            query = "Select  * from AQ where timestamp between @start and @end order by timestamp desc ";
+                    }
+                    filter = true;
                 }
-                catch (Exception ex)
+                else
                 {
-                    Console.WriteLine(ex.Message);
+                    if (response.AQID != 0)
+                    {
+                        if (response.SensorID != 0)
+                            query = "Select * from AQ  where sensorid = @sensor and id >= @id";
+                        else
+                            query = "Select * from AQ  where id >= @id";
+                        aqId = response.AQID;
+                    }
+                    else
+                    {
+                        if (response.SensorID != 0)
+                            query = "Select * from AQ  where sensorid = @sensor ";
+                        else
+                            query = "Select * from AQ ";
+                    }
+                    filter = false;
                 }
+
+                using (SqlConnection connection = new SqlConnection(connectionString))
+                {
+                    SqlCommand command = new SqlCommand(query, connection);
+                    if (response.SensorID != 0)
+                        command.Parameters.AddWithValue("@sensor", response.SensorID);
+                    if (filter)
+                    {
+                        System.DateTime dtDateTimeStart = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
+                        dtDateTimeStart = dtDateTimeStart.AddSeconds(double.Parse(response.start)).ToLocalTime();
+                        System.DateTime dtDateTimeEnd = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
+                        dtDateTimeEnd = dtDateTimeEnd.AddSeconds(double.Parse(response.end)).ToLocalTime();
+                        command.Parameters.AddWithValue("@start", dtDateTimeStart);
+                        command.Parameters.AddWithValue("@end", dtDateTimeEnd);
+                    }
+                    if (aqId != 0)
+                    {
+                        command.Parameters.AddWithValue("@id", aqId);
+                    }
+                    try
+                    {
+                        connection.Open();
+                        SqlDataReader reader = command.ExecuteReader();
+                        while (reader.Read())
+                        {
+                            AQ aq = new AQ();
+                            aq.Id = int.Parse(reader["id"].ToString());
+                            aq.SensorID = int.Parse(reader["SensorID"].ToString());
+                            aq.Temperature = float.Parse(reader["Temperature"].ToString());
+                            aq.Humidity = float.Parse(reader["Humidity"].ToString());
+                            aq.Battery = int.Parse(reader["Battery"].ToString());
+                            aq.Timestamp = DateTime.Parse(reader["Timestamp"].ToString());
+                            aqs.Add(aq);
+                        }
+                        reader.Close();
+                        connection.Close();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+                }
+                return Ok(aqs);//Respecting HTTP errors (200 OK)
             }
-            return Ok(aqs);//Respecting HTTP errors (200 OK)
+            return BadRequest("Não autenticado");
         }
 
 
-        [Route("api/aq/{id}")]
+        [Route("api/aq/")]
         [HttpDelete]
-        public IHttpActionResult DeleteAQ(int id)
+        public IHttpActionResult DeleteAQ(DeleteAQMap deleteAQ)
         {
             int rows = 0;
-            string query = "delete from AQ where id = @id";
-            using (SqlConnection connection = new SqlConnection(connectionString))
+            Debug.WriteLine(deleteAQ.cred);
+            if (deleteAQ.cred!=null&&UserController.ValidateUser(deleteAQ.cred))
             {
-                SqlCommand command = new SqlCommand(query, connection);
-                command.Parameters.AddWithValue("@id", id);
+                string query = "delete from AQ where id = @id";
+                using (SqlConnection connection = new SqlConnection(connectionString))
+                {
+                    SqlCommand command = new SqlCommand(query, connection);
+                    command.Parameters.AddWithValue("@id", deleteAQ.id);
 
-                try
-                {
-                    connection.Open();
-                    rows = command.ExecuteNonQuery();
-                    connection.Close();
+                    try
+                    {
+                        connection.Open();
+                        rows = command.ExecuteNonQuery();
+                        connection.Close();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
                 }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
-                }
+                return Ok(rows);
             }
-            return Ok(rows);
+            return BadRequest("Não autenticado");
         }
 
         public int getId()
@@ -377,65 +386,69 @@ namespace IPLeiriaSmartCampus.Controllers
         {
             string topic = "dataISMosquittoTest";
             string topicSensor = "newSensorsInsertIS";
+            Debug.WriteLine(aq.cred);
             int rows = 0;
             int id = getId();
-            if (SensorController.SensorExists(aq.SensorID))
+            if (aq.cred!=null&&UserController.ValidateUser(aq.cred))
             {
-                string query = "Insert into AQ (id,SensorID, Temperature, Humidity, Battery, Timestamp ) values (@id,@Sensor, @Temp, @Hum, @Bat, @Time)";
-                using (SqlConnection connection = new SqlConnection(connectionString))
+                if (SensorController.SensorExists(aq.SensorID))
                 {
-                    SqlCommand command = new SqlCommand(query, connection);
-                    System.DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
-                    dtDateTime = dtDateTime.AddSeconds(double.Parse(aq.Timestamp)).ToLocalTime();
-                    id++;
-                    command.Parameters.AddWithValue("@id", id);
-                    command.Parameters.AddWithValue("@Sensor", aq.SensorID);
-                    command.Parameters.AddWithValue("@Temp", aq.Temperature);
-                    command.Parameters.AddWithValue("@Hum", aq.Humidity);
-                    command.Parameters.AddWithValue("@Bat", aq.Battery);
-                    command.Parameters.AddWithValue("@Time", dtDateTime);
+                    string query = "Insert into AQ (id,SensorID, Temperature, Humidity, Battery, Timestamp ) values (@id,@Sensor, @Temp, @Hum, @Bat, @Time)";
+                    using (SqlConnection connection = new SqlConnection(connectionString))
+                    {
+                        SqlCommand command = new SqlCommand(query, connection);
+                        System.DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
+                        dtDateTime = dtDateTime.AddSeconds(double.Parse(aq.Timestamp)).ToLocalTime();
+                        id++;
+                        command.Parameters.AddWithValue("@id", id);
+                        command.Parameters.AddWithValue("@Sensor", aq.SensorID);
+                        command.Parameters.AddWithValue("@Temp", aq.Temperature);
+                        command.Parameters.AddWithValue("@Hum", aq.Humidity);
+                        command.Parameters.AddWithValue("@Bat", aq.Battery);
+                        command.Parameters.AddWithValue("@Time", dtDateTime);
 
-                    try
-                    {
-                        connection.Open();
-                        rows += command.ExecuteNonQuery();
-                        connection.Close();
+                        try
+                        {
+                            connection.Open();
+                            rows += command.ExecuteNonQuery();
+                            connection.Close();
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex.Message);
+                        }
                     }
-                    catch (Exception ex)
+
+                    mcClient.Connect(Guid.NewGuid().ToString());
+                    if (!mcClient.IsConnected)
                     {
-                        Console.WriteLine(ex.Message);
+                        Console.WriteLine("Error connecting to message broker...");
+
                     }
+                    mcClient.Publish("dataISMosquittoTest", Encoding.UTF8.GetBytes(id.ToString()));
+                    if (mcClient.IsConnected)
+                    {
+                        mcClient.Unsubscribe(new string[] { topic }); //Put this in a button to see notify!
+                        mcClient.Disconnect();
+                    }
+                    return Ok(rows);
                 }
-
+                else
+                {
+                    aqsSemSensor.Add(aq);
+                }
                 mcClient.Connect(Guid.NewGuid().ToString());
                 if (!mcClient.IsConnected)
                 {
                     Console.WriteLine("Error connecting to message broker...");
 
                 }
-                mcClient.Publish("dataISMosquittoTest", Encoding.UTF8.GetBytes(id.ToString()));
-                if (mcClient.IsConnected)
-                {
-                      mcClient.Unsubscribe(new string[] { topic }); //Put this in a button to see notify!
-                      mcClient.Disconnect();
-                }
-                return Ok(rows);
+                mcClient.Subscribe(new string[] { topicSensor }, new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
+                Debug.WriteLine("Subscrito");
+                mcClient.MqttMsgPublishReceived += client_MqttMsgPublishReceived;
+                return BadRequest("A aq não foi inserida pois o sensor não existe");
             }
-            else
-            {
-                aqsSemSensor.Add(aq);
-            }
-            mcClient.Connect(Guid.NewGuid().ToString());
-            if (!mcClient.IsConnected)
-            {
-                Console.WriteLine("Error connecting to message broker...");
-
-            }
-            mcClient.Subscribe(new string[] { topicSensor }, new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
-            Debug.WriteLine("Subscrito");
-            mcClient.MqttMsgPublishReceived += client_MqttMsgPublishReceived;
-            return BadRequest("A aq não foi inserida pois o sensor não existe");
-        }
-
+         return BadRequest("Não autenticado");
+       }
     }
 }

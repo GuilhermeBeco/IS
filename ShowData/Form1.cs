@@ -17,7 +17,9 @@ namespace ShowData
 {
     public partial class Form1 : Form
     {
-        
+        string username = "";
+        string password = "";
+        bool authed = false;
         List<Sensor> list = new List<Sensor>();
         List<AQ> aqs = new List<AQ>();
         Task<string> s;
@@ -26,13 +28,20 @@ namespace ShowData
         MqttClient mcClient;
         Sensor sensorAtual;
         string topic = "dataISMosquittoTest";
+        string topicSensors = "newSensorsInsertIS";
         BindingSource bindingSource = new BindingSource();
+        bool updateBox = false;
+        private string cred;
 
         private void client_MqttMsgPublishReceived(object sender, MqttMsgPublishEventArgs e)
         {
             idRecv = int.Parse(Encoding.UTF8.GetString(e.Message));
-            
-            updateTable();
+            if (e.Topic == topic)
+                updateTable();
+            else
+            {
+                //load sensors
+            }
         }
 
         public Form1()
@@ -47,6 +56,14 @@ namespace ShowData
             }
             mcClient.Subscribe(new string[] { topic }, new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
             mcClient.MqttMsgPublishReceived += client_MqttMsgPublishReceived;
+
+            while (true)
+            {
+                if (!updateBox)
+                {
+                    updateUI();
+                }
+            }
         }
 
 
@@ -71,14 +88,14 @@ namespace ShowData
             d.end = "";
             string data = Newtonsoft.Json.JsonConvert.SerializeObject(d);            
             string res = Post("https://localhost:44327/api/aq/all",data,"application/json");
+            // mudar o post para o cred
             aqs.Clear();
             aqs= Newtonsoft.Json.JsonConvert.DeserializeObject<List<AQ>>(res);
             richTextBoxData.Text = "";
-            updateUI();
-            
-           
-
+            //updateUI();
+            updateBox = true;
         }
+
         private void updateUI()
         {
             
@@ -91,6 +108,8 @@ namespace ShowData
             labelHumidityValue.Text = aqs[aqs.Count - 1].Humidity.ToString();
             labelDataValue.Text = aqs[aqs.Count - 1].Timestamp.ToString();
             Console.WriteLine("AQS len = " + aqs.Count);
+            updateBox = false;
+
         }
  
         private void updateTable()
@@ -101,16 +120,15 @@ namespace ShowData
             d.end = "";
             d.AQID = idRecv;
             string data = Newtonsoft.Json.JsonConvert.SerializeObject(d);
-            string res = Post("https://localhost:44327/api/aq/all", data, "application/json");
+            string res = Post("https://localhost:44327/api/aq/all", data, "application/json");//mudar o post para cred
             List<AQ> aux = new List<AQ>();
             aux = Newtonsoft.Json.JsonConvert.DeserializeObject<List<AQ>>(res);
-            foreach(AQ a in aux)
+            foreach (AQ a in aux)
             {
                 Console.WriteLine(a.Id);
                 aqs.Add(a);
             }
-            Console.WriteLine("após o updateTable: " + aqs.Count);
-            updateUI();
+            updateBox = false;
             
            
             Console.WriteLine(d.AQID);
@@ -118,11 +136,16 @@ namespace ShowData
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            s = GetAsync("https://localhost:44327/api/sensors/");
-            list= Newtonsoft.Json.JsonConvert.DeserializeObject<List<Sensor>>(s.Result);
+            comboBoxSensors.SelectedIndexChanged += new System.EventHandler(itemChanged);
+        }
+
+        private void loadSensors()
+        {
+            s = GetAsync("https://localhost:44327/api/sensors/"); //mudar para post com o cred
+            list = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Sensor>>(s.Result);
             comboBoxSensors.Items.Clear();
             foreach (Sensor sen in list)
-            {                
+            {
                 comboBoxSensors.Items.Add(sen);
             }
             richTextBoxData.Text = "";
@@ -130,9 +153,6 @@ namespace ShowData
             labelTemperatureValue.Text = "";
             labelHumidityValue.Text = "";
             labelDataValue.Text = "";
-            comboBoxSensors.SelectedIndexChanged += new System.EventHandler(itemChanged);
-            
-       
         }
 
         public Task<string> GetAsync(string uri)
@@ -168,6 +188,24 @@ namespace ShowData
             {
                 return reader.ReadToEnd();
             }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            username = textBoxUsername.Text;
+            password = textBoxPassword.Text;
+            string data = "{ username: \""+username+"\", password: \""+password+"\" }";
+            string response = Post("https://localhost:44327/api/users/auth", data, "application/json");
+            authed = Newtonsoft.Json.JsonConvert.DeserializeObject<bool>(response);
+            if (authed)
+            {
+                labelLogin.Text = "Authed";
+                var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(username + ":" + password);
+                cred = System.Convert.ToBase64String(plainTextBytes);
+                loadSensors();
+            }
+            else
+                labelLogin.Text = "Fail";
         }
     }
 }
