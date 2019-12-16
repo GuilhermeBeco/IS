@@ -26,8 +26,9 @@ namespace DataStorage.Properties {
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.ConnectionString)]
-        [global::System.Configuration.DefaultSettingValueAttribute("Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=C:\\Users\\Beco\\source\\repos\\IS" +
-            "\\IPLeiriaSmartCampus\\App_Data\\IPLeriaSmartCampusDB.mdf;Integrated Security=True")]
+        [global::System.Configuration.DefaultSettingValueAttribute("Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=C:\\Users\\Beco\\Desktop\\IPLeiri" +
+            "aSmartCampus\\IPLeiriaSmartCampus\\App_Data\\IPLeriaSmartCampusDB.mdf;Integrated Se" +
+            "curity=True")]
         public string ConnStr {
             get {
                 return ((string)(this["ConnStr"]));

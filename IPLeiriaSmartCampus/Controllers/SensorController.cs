@@ -153,11 +153,6 @@ namespace IPLeiriaSmartCampus.Controllers
                         }
                         mcClient.Publish("newSensorsInsertIS", Encoding.UTF8.GetBytes(sensor.SensorID.ToString()));
 
-                        if (mcClient.IsConnected)
-                        {
-                            mcClient.Unsubscribe(new string[] { topic }); //Put this in a button to see notify!
-                            mcClient.Disconnect();
-                        }
 
                     }
                     return Ok(rows);//Respecting HTTP errors (200 OK)

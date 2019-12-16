@@ -15,6 +15,7 @@ using uPLibrary.Networking.M2Mqtt.Messages;
 
 namespace ShowData
 {
+    public delegate void updateUIDel();
     public partial class Form1 : Form
     {
         string username = "";
@@ -33,16 +34,22 @@ namespace ShowData
         bool updateSensors = false;
         bool updateBox = false;
         private string cred;
-
+        
         private void client_MqttMsgPublishReceived(object sender, MqttMsgPublishEventArgs e)
         {
             idRecv = int.Parse(Encoding.UTF8.GetString(e.Message));
-            if (e.Topic == topic)
+            if (e.Topic == topic) {
+                if(authed)
                 updateTable();
+            }
+
             else
             {
-                list.Clear();
-                updateSensors = true;
+                if (authed)
+                {
+                    list.Clear();
+                    loadSensors();
+                }
             }
         }
 
@@ -59,18 +66,7 @@ namespace ShowData
             mcClient.Subscribe(new string[] { topic }, new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
             mcClient.Subscribe(new string[] { topicSensors }, new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
             mcClient.MqttMsgPublishReceived += client_MqttMsgPublishReceived;
-
-          /*  while (true)
-            {
-                if (updateBox)
-                {
-                    updateUI();
-                }
-                if (updateSensors)
-                {
-                    loadSensors();
-                }
-            }*/
+            
         }
 
 
@@ -97,7 +93,6 @@ namespace ShowData
             d.cred = cred;
             string data = Newtonsoft.Json.JsonConvert.SerializeObject(d);            
             string res = Post("https://localhost:44327/api/aq/all",data,"application/json");
-            // mudar o post para o cred
             aqs.Clear();
             aqs= Newtonsoft.Json.JsonConvert.DeserializeObject<List<AQ>>(res);
             richTextBoxData.Text = "";
@@ -109,48 +104,92 @@ namespace ShowData
 
         private void updateUI()
         {
-            chart1.Series["Temperature"].Points.Clear();
-            chart1.Series["Humidity"].Points.Clear();
+            chart1.Invoke((MethodInvoker)delegate
+            {
+                chart1.Series["Temperature"].Points.Clear();
+                chart1.Series["Humidity"].Points.Clear();
+            });
+           
             foreach (AQ aq in aqs)
             {
-               richTextBoxData.Text += aq.ToString();
+                richTextBoxData.Invoke((MethodInvoker)delegate { richTextBoxData.Text += aq.ToString(); });
+
                 //  chart1.Series["Temperature"].Points.AddXY(aq.Timestamp.Subtract(new DateTime(1970, 1, 1)).TotalSeconds, aq.Temperature);
                 //chart1.Series["Humidity"].Points.AddXY(aq.Timestamp.Subtract(new DateTime(1970, 1, 1)).TotalSeconds, aq.Humidity);
-                 chart1.Series["Temperature"].Points.AddXY(aq.Id, aq.Temperature);
-                chart1.Series["Humidity"].Points.AddXY(aq.Id, aq.Humidity);
+                chart1.Invoke((MethodInvoker)delegate {
+                    chart1.Series["Temperature"].Points.AddXY(aq.Id, aq.Temperature);
+                    chart1.Series["Humidity"].Points.AddXY(aq.Id, aq.Humidity);
+                });
+                
             }
-            labelBatteryValue.Text = aqs[aqs.Count - 1].Battery.ToString();
-            labelTemperatureValue.Text = aqs[aqs.Count - 1].Temperature.ToString();
-            labelHumidityValue.Text = aqs[aqs.Count - 1].Humidity.ToString();
-            labelDataValue.Text = aqs[aqs.Count - 1].Timestamp.ToString();
-            Console.WriteLine("AQS len = " + aqs.Count);
-            updateBox = false;
-
+            labelBatteryValue.Invoke((MethodInvoker)delegate
+            {
+                try
+                {
+                    labelBatteryValue.Text = aqs[aqs.Count - 1].Battery.ToString();
+                }catch(Exception e)
+                {
+                    labelBatteryValue.Text = "Sem dados";
+                }
+            });
+            labelDataValue.Invoke((MethodInvoker)delegate
+            {
+                try
+                {
+                    labelDataValue.Text = aqs[aqs.Count - 1].Timestamp.ToString();
+                }catch(Exception e)
+                {
+                    labelDataValue.Text = "Sem dados";
+                }
+            });
+            labelTemperatureValue.Invoke((MethodInvoker)delegate
+            {
+                try
+                {
+                    labelTemperatureValue.Text = aqs[aqs.Count - 1].Temperature.ToString();
+                }catch(Exception e)
+                {
+                    labelTemperatureValue.Text = "Sem dados";
+                }
+            });
+            labelHumidityValue.Invoke((MethodInvoker)delegate {
+                try
+                {
+                    labelHumidityValue.Text = aqs[aqs.Count - 1].Humidity.ToString();
+                }
+                catch
+                {
+                    labelHumidityValue.Text = "Sem dados";
+                    richTextBoxData.Text = "Sem dados";
+                }
+            });
+      
+                
         }
  
         private void updateTable()
         {
             JsonSensorData d = new JsonSensorData();
             if (sensorAtual != null)
-                d.SensorID = sensorAtual.SensorID;
-            else
-                d.SensorID = 0;
-            d.start = "";
-            d.end = "";
-            d.AQID = idRecv;
-            d.cred = cred;
-            string data = Newtonsoft.Json.JsonConvert.SerializeObject(d);
-            string res = Post("https://localhost:44327/api/aq/all", data, "application/json");//mudar o post para cred
-            List<AQ> aux = new List<AQ>();
-            aux = Newtonsoft.Json.JsonConvert.DeserializeObject<List<AQ>>(res);
-            foreach (AQ a in aux)
             {
-                Console.WriteLine(a.Id);
-                aqs.Add(a);
+                d.SensorID = sensorAtual.SensorID;
+                d.start = "";
+                d.end = "";
+                d.AQID = idRecv;
+                d.cred = cred;
+                string data = Newtonsoft.Json.JsonConvert.SerializeObject(d);
+                string res = Post("https://localhost:44327/api/aq/all", data, "application/json");//mudar o post para cred
+                List<AQ> aux = new List<AQ>();
+                aux = Newtonsoft.Json.JsonConvert.DeserializeObject<List<AQ>>(res);
+                foreach (AQ a in aux)
+                {
+                    Console.WriteLine(a.Id);
+                    aqs.Add(a);
+                }
+                updateBox = false;
+                updateUI();
+                Console.WriteLine(d.AQID);
             }
-            updateBox = false;
-           // updateUI();            
-            Console.WriteLine(d.AQID);
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -159,25 +198,38 @@ namespace ShowData
         }
 
         private void loadSensors()
-        {
-            if (comboBoxSensors.Items.Count != 0)
-            {
-                comboBoxSensors.Items.Clear();
-            }
+        {        
             string jsonToData = "{ \"cred\": \"" + cred + "\" }";
-            string response = Post("https://localhost:44327/api/sensors/authed", jsonToData, "application/json");
+            string response = Post("https://localhost:44327/api/sensors/authed", jsonToData, "application/json");  
             list = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Sensor>>(response);
-            comboBoxSensors.Items.Clear();
-            foreach (Sensor sen in list)
+            comboBoxSensors.Invoke((MethodInvoker)delegate { 
+                comboBoxSensors.Items.Clear();
+
+                foreach (Sensor sen in list)
+                {
+                    comboBoxSensors.Items.Add(sen);
+                }
+            });
+            richTextBoxData.Invoke((MethodInvoker)delegate
             {
-                comboBoxSensors.Items.Add(sen);
-            }
-            richTextBoxData.Text = "";
-            labelBatteryValue.Text = "";
-            labelTemperatureValue.Text = "";
-            labelHumidityValue.Text = "";
-            labelDataValue.Text = "";
-            updateSensors = false;
+                richTextBoxData.Text = "";
+            });
+            labelBatteryValue.Invoke((MethodInvoker)delegate
+            {
+                labelBatteryValue.Text = "";
+            });
+            labelDataValue.Invoke((MethodInvoker)delegate
+            {
+                labelDataValue.Text = "";
+            });
+            labelTemperatureValue.Invoke((MethodInvoker)delegate
+            {
+                labelTemperatureValue.Text = "";
+            });
+            labelHumidityValue.Invoke((MethodInvoker)delegate {
+                labelHumidityValue.Text = "";
+            });
+
         }
 
         public Task<string> GetAsync(string uri)
@@ -206,12 +258,19 @@ namespace ShowData
             {
                 requestBody.Write(dataBytes, 0, dataBytes.Length);
             }
-
-            using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
-            using (Stream stream = response.GetResponseStream())
-            using (StreamReader reader = new StreamReader(stream))
+            try
             {
-                return reader.ReadToEnd();
+                using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+                using (Stream stream = response.GetResponseStream())
+                using (StreamReader reader = new StreamReader(stream))
+                {
+                    return reader.ReadToEnd();
+                }
+            }
+            catch (Exception e)
+            {
+                //labelLogin.Text = "Non Authed";
+                return "non authed";
             }
         }
 

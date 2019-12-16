@@ -39,26 +39,30 @@ namespace AlertData
             idRecv = int.Parse(Encoding.UTF8.GetString(e.Message));
             if (e.Topic == topic)
             {
-                JsonSensorData d = new JsonSensorData();
-                d.SensorID = 0;
-                d.start = "";
-                d.end = "";
-                d.AQID = idRecv;
-                d.cred = cred;
-                string data = Newtonsoft.Json.JsonConvert.SerializeObject(d);
-                string res = Post("https://localhost:44327/api/aq/all", data, "application/json"); //mudar para o post com cred
-                List<AQ> aux = new List<AQ>();
-                aux = Newtonsoft.Json.JsonConvert.DeserializeObject<List<AQ>>(res);
-                foreach (AQ a in aux)
+                if (authed)
                 {
-                    Console.WriteLine(a.Id);
-                    aqs.Add(a);
+                    JsonSensorData d = new JsonSensorData();
+                    d.SensorID = 0;
+                    d.start = "";
+                    d.end = "";
+                    d.AQID = idRecv;
+                    d.cred = cred;
+                    string data = Newtonsoft.Json.JsonConvert.SerializeObject(d);
+                    string res = Post("https://localhost:44327/api/aq/all", data, "application/json"); //mudar para o post com cred
+                    List<AQ> aux = new List<AQ>();
+                    aux = Newtonsoft.Json.JsonConvert.DeserializeObject<List<AQ>>(res);
+                    foreach (AQ a in aux)
+                    {
+                        Console.WriteLine(a.Id);
+                        aqs.Add(a);
+                    }
+                    processaTriggers();
                 }
-                processaTriggers();
             }
             else
             {
-                loadSensors();
+                if(authed)
+                    loadSensors();
                 
             }
         }
@@ -77,13 +81,7 @@ namespace AlertData
             mcClient.Subscribe(new string[] { topic }, new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
             mcClient.Subscribe(new string[] { topicSensors }, new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
             mcClient.MqttMsgPublishReceived += client_MqttMsgPublishReceived;
-           /* while (true)
-            {
-                if (updateSensors)
-                {
-                    loadSensors();
-                }
-            }*/
+          
         }
 
         public void sendEmail(string body, string email)
@@ -105,7 +103,6 @@ namespace AlertData
             }
             
         }
-
 
         private void processaTriggers()
         {
@@ -194,20 +191,18 @@ namespace AlertData
         }
         private void loadSensors()
         {
-            if (comboBoxSensors.Items.Count != 0)
-            {
-                comboBoxSensors.Items.Clear();
-            }
             string jsonToData = "{ \"cred\": \"" + cred + "\" }";
             string response = Post("https://localhost:44327/api/sensors/authed", jsonToData, "application/json");
             list = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Sensor>>(response);
-            comboBoxSensors.Items.Clear();
-            foreach (Sensor sen in list)
-            {
-                comboBoxSensors.Items.Add(sen);
-            }
-            updateSensors = false;
-            
+            comboBoxSensors.Invoke((MethodInvoker)delegate {
+                comboBoxSensors.Items.Clear();
+
+                foreach (Sensor sen in list)
+                {
+                    comboBoxSensors.Items.Add(sen);
+                }
+            });
+
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -267,12 +262,18 @@ namespace AlertData
             {
                 requestBody.Write(dataBytes, 0, dataBytes.Length);
             }
-
-            using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
-            using (Stream stream = response.GetResponseStream())
-            using (StreamReader reader = new StreamReader(stream))
+            try
             {
-                return reader.ReadToEnd();
+                using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+                using (Stream stream = response.GetResponseStream())
+                using (StreamReader reader = new StreamReader(stream))
+                {
+                    return reader.ReadToEnd();
+                }
+            }catch(Exception e)
+            {
+                //labelLogin.Text = "Non Authed";
+                return "non authed";
             }
         }
 
@@ -284,8 +285,7 @@ namespace AlertData
                 mcClient.Disconnect(); //Free process and process's resources
             }
         }
-       
-       
+        
         private void button1_Click(object sender, EventArgs e)
         {
             username = textBoxUsername.Text;

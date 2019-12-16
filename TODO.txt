@@ -1,2 +1,1 @@
-Data storage
 resolver o update table e o update chart

@@ -172,31 +172,34 @@ namespace IPLeiriaSmartCampus.Controllers
 
         public static bool ValidateUser(string ba)
         {
-            string decoded;
-            byte[] data = System.Convert.FromBase64String(ba);
-            decoded = System.Text.UTF8Encoding.UTF8.GetString(data);
-            string[] cred = decoded.Split(':');
-            string username = cred[0];
-            string password = cred[1];
-            User user = findUser(username);
-            if (user != null)
-            {
-                var sha1 = new SHA1CryptoServiceProvider();
-                var dataHash = Encoding.UTF8.GetBytes(password);
-                byte[] sha1data = sha1.ComputeHash(dataHash);
-                string hashedPass = Encoding.UTF8.GetString(sha1data);
-
-                Debug.WriteLine("hashedPass do creed: "+hashedPass+" | hashedPass do user: "+ Encoding.UTF8.GetString(Encoding.UTF8.GetBytes(user.Password)));
-                if (user.Password.Equals(hashedPass))
+            try {
+                string decoded;
+                byte[] data = System.Convert.FromBase64String(ba);
+                decoded = System.Text.UTF8Encoding.UTF8.GetString(data);
+                string[] cred = decoded.Split(':');
+                string username = cred[0];
+                string password = cred[1];
+                User user = findUser(username);
+                if (user != null)
                 {
-                    return true;
+                    var sha1 = new SHA1CryptoServiceProvider();
+                    var dataHash = Encoding.UTF8.GetBytes(password);
+                    byte[] sha1data = sha1.ComputeHash(dataHash);
+                    string hashedPass = Encoding.UTF8.GetString(sha1data);
+
+                    Debug.WriteLine("hashedPass do creed: " + hashedPass + " | hashedPass do user: " + Encoding.UTF8.GetString(Encoding.UTF8.GetBytes(user.Password)));
+                    if (user.Password.Equals(hashedPass))
+                    {
+                        return true;
+                    }
+                    return false;
                 }
                 return false;
             }
-            return false;
+            catch(Exception e)
+            {
+                return false;
+            }
         }
-       
-
-
     }
 }
