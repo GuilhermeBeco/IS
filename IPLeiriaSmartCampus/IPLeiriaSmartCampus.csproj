@@ -121,6 +121,7 @@
     </Compile>
     <Compile Include="Models\AQMap.cs" />
     <Compile Include="Models\AQ.cs" />
+    <Compile Include="Models\CredMod.cs" />
     <Compile Include="Models\DeleteAQMap.cs" />
     <Compile Include="Models\GetAllSensors.cs" />
     <Compile Include="Models\User.cs" />

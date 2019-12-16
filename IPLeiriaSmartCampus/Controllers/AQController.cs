@@ -25,40 +25,44 @@ namespace IPLeiriaSmartCampus.Controllers
 
 
 
-        [Route("api/aq/")]
-
-        public IHttpActionResult GetLastAQ()
+        [Route("api/aq/get")]
+        [HttpPost]
+        public IHttpActionResult GetLastAQ(CredMod credMod)
         {
             AQ aq = new AQ();
-            string query = "Select top 1 * from AQ order by timestamp desc ";
-            using (SqlConnection connection = new SqlConnection(connectionString))
+            if (credMod.cred != null && UserController.ValidateUser(credMod.cred))
             {
-                SqlCommand command = new SqlCommand(query, connection);
-                try
+                string query = "Select top 1 * from AQ order by timestamp desc ";
+                using (SqlConnection connection = new SqlConnection(connectionString))
                 {
-                    connection.Open();
-                    SqlDataReader reader = command.ExecuteReader();
-                    while (reader.Read())
+                    SqlCommand command = new SqlCommand(query, connection);
+                    try
                     {
-                        aq.Id = int.Parse(reader["id"].ToString());
-                        aq.SensorID = int.Parse(reader["SensorID"].ToString());
-                        aq.Temperature = float.Parse(reader["Temperature"].ToString());
-                        aq.Humidity = float.Parse(reader["Humidity"].ToString());
-                        aq.Battery = int.Parse(reader["Battery"].ToString());
-                        aq.Timestamp = DateTime.Parse(reader["Timestamp"].ToString());
+                        connection.Open();
+                        SqlDataReader reader = command.ExecuteReader();
+                        while (reader.Read())
+                        {
+                            aq.Id = int.Parse(reader["id"].ToString());
+                            aq.SensorID = int.Parse(reader["SensorID"].ToString());
+                            aq.Temperature = float.Parse(reader["Temperature"].ToString());
+                            aq.Humidity = float.Parse(reader["Humidity"].ToString());
+                            aq.Battery = int.Parse(reader["Battery"].ToString());
+                            aq.Timestamp = DateTime.Parse(reader["Timestamp"].ToString());
 
+                        }
+                        reader.Close();
+                        connection.Close();
                     }
-                    reader.Close();
-                    connection.Close();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+
                 }
 
+                return Ok(aq);//Respecting HTTP errors (200 OK)
             }
-
-            return Ok(aq);//Respecting HTTP errors (200 OK)
+            return BadRequest("Não Autenticado");
         }
 
         [Route("api/ok")]
@@ -68,10 +72,13 @@ namespace IPLeiriaSmartCampus.Controllers
         }
 
         [Route("api/aq/{sensor}")]
-        public IHttpActionResult GetLastAQSensor(int sensor)
+        [HttpPost]
+        public IHttpActionResult GetLastAQSensor(int sensor, [FromBody] CredMod mod)
         {
             AQ aq = new AQ();
-            string query = "Select top 1 * from AQ where sensorid = @sensor order by timestamp desc";
+            if (mod.cred != null && UserController.ValidateUser(mod.cred))
+            {
+                string query = "Select top 1 * from AQ where sensorid = @sensor order by timestamp desc";
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
                 SqlCommand command = new SqlCommand(query, connection);
@@ -102,6 +109,8 @@ namespace IPLeiriaSmartCampus.Controllers
             }
 
             return Ok(aq);//Respecting HTTP errors (200 OK)
+            }
+            return BadRequest("Não Autenticado");
         }
 
         [Route("api/aq/all")]
@@ -297,6 +306,7 @@ namespace IPLeiriaSmartCampus.Controllers
                         catch (Exception ex)
                         {
                             Console.WriteLine(ex.Message);
+                        
                         }
 
                     }
@@ -426,11 +436,11 @@ namespace IPLeiriaSmartCampus.Controllers
 
                     }
                     mcClient.Publish("dataISMosquittoTest", Encoding.UTF8.GetBytes(id.ToString()));
-                    if (mcClient.IsConnected)
+                   /* if (mcClient.IsConnected)
                     {
                         mcClient.Unsubscribe(new string[] { topic }); //Put this in a button to see notify!
                         mcClient.Disconnect();
-                    }
+                    }*/
                     return Ok(rows);
                 }
                 else

@@ -12,7 +12,7 @@ namespace IPLeiriaSmartCampus.Models
         public string Local { get; set; }
         public string username { get; set; }
 
-        public string cred { get;set }
+        public string cred { get; set; }
 
     }
 }

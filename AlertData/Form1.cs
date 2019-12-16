@@ -32,6 +32,7 @@ namespace AlertData
         private string password;
         private bool authed = false;
         private string cred;
+        private bool updateSensors=false;
 
         private void client_MqttMsgPublishReceived(object sender, MqttMsgPublishEventArgs e)
         {
@@ -43,6 +44,7 @@ namespace AlertData
                 d.start = "";
                 d.end = "";
                 d.AQID = idRecv;
+                d.cred = cred;
                 string data = Newtonsoft.Json.JsonConvert.SerializeObject(d);
                 string res = Post("https://localhost:44327/api/aq/all", data, "application/json"); //mudar para o post com cred
                 List<AQ> aux = new List<AQ>();
@@ -56,8 +58,8 @@ namespace AlertData
             }
             else
             {
-                comboBoxSensors.Items.Clear();
                 loadSensors();
+                
             }
         }
 
@@ -72,16 +74,24 @@ namespace AlertData
                 Console.WriteLine("Error connecting to message broker...");
                 return;
             }
-            mcClient.Subscribe(new string[] { topic, topicSensors }, new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
+            mcClient.Subscribe(new string[] { topic }, new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
+            mcClient.Subscribe(new string[] { topicSensors }, new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
             mcClient.MqttMsgPublishReceived += client_MqttMsgPublishReceived;
+           /* while (true)
+            {
+                if (updateSensors)
+                {
+                    loadSensors();
+                }
+            }*/
         }
 
         public void sendEmail(string body, string email)
         {
             //debug de email
-            MailMessage o = new MailMessage("IStesting@outlook.pt", email, "Alerta de valores", body);
-            NetworkCredential netCred = new NetworkCredential("IStesting@outlook.pt", "IsWebService");
-            SmtpClient smtpobj = new SmtpClient("SMTP.office365.com", 587);
+            MailMessage o = new MailMessage("istestes10@gmail.com", email, "Alerta de valores", body);
+            NetworkCredential netCred = new NetworkCredential("istestes10@gmail.com", "isTesting");
+            SmtpClient smtpobj = new SmtpClient("smtp.gmail.com", 25);
             smtpobj.EnableSsl = true;
             smtpobj.Credentials = netCred;
             try
@@ -91,8 +101,9 @@ namespace AlertData
             {
                 Console.WriteLine(o.ToString());
                 Console.WriteLine(body);
+                Console.WriteLine(e.Message);
             }
-
+            
         }
 
 
@@ -183,18 +194,30 @@ namespace AlertData
         }
         private void loadSensors()
         {
-            s = GetAsync("https://localhost:44327/api/sensors/");//mudar para o post com cred
-            list = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Sensor>>(s.Result);
+            if (comboBoxSensors.Items.Count != 0)
+            {
+                comboBoxSensors.Items.Clear();
+            }
+            string jsonToData = "{ \"cred\": \"" + cred + "\" }";
+            string response = Post("https://localhost:44327/api/sensors/authed", jsonToData, "application/json");
+            list = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Sensor>>(response);
             comboBoxSensors.Items.Clear();
             foreach (Sensor sen in list)
             {
                 comboBoxSensors.Items.Add(sen);
             }
-            triggers = fm.getTriggers();
+            updateSensors = false;
+            
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            triggers = fm.getTriggers();
+            Console.WriteLine(triggers[0].campo);
+            if(triggers == null)
+            {
+                triggers = new List<Trigger>();
+            }
             buttonCreateTrigger.Click += ButtonCreateTrigger_Click;
             buttonSaveAll.Click += ButtonSaveAll_Click;
         }
@@ -267,7 +290,10 @@ namespace AlertData
         {
             username = textBoxUsername.Text;
             password = textBoxPassword.Text;
-            string data = "{ username: \"" + username + "\", password: \"" + password + "\" }";
+            var model = new AuthModel();
+            model.username = username;
+            model.password = password;
+            string data = Newtonsoft.Json.JsonConvert.SerializeObject(model);
             string response = Post("https://localhost:44327/api/users/auth", data, "application/json");
             authed = Newtonsoft.Json.JsonConvert.DeserializeObject<bool>(response);
             if (authed)

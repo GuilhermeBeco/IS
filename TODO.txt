@@ -1,6 +1,2 @@
-Mudar os posts com cred dos forms
-Fazer as verificações do auth nos forms
-Testar todas as rotas de cred
-O grafico do show data
-Debug ao mail send
 Data storage
+resolver o update table e o update chart

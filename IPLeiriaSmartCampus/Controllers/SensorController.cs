@@ -18,51 +18,6 @@ namespace IPLeiriaSmartCampus.Controllers
 
         string topic =  "newSensorsInsertIS";
 
-        [Route("api/sensors/")]
-        [HttpPost]
-        public IHttpActionResult GetAllSensors(string cred)
-        {
-            List<Sensor> sensors = new List<Sensor>();
-            string query = "Select * from sensor";
-            if (cred != null && UserController.ValidateUser(cred))
-            {
-                using (SqlConnection connection = new SqlConnection(connectionString))
-                {
-                    SqlCommand command = new SqlCommand(query, connection);
-                    try
-                    {
-                        connection.Open();
-                        SqlDataReader reader = command.ExecuteReader();
-                        while (reader.Read())
-                        {
-                            Sensor sensor = new Sensor();
-                            sensor.SensorID = int.Parse(reader["id"].ToString());
-                            sensor.Local = reader["local"].ToString();
-                            if (reader["username"].ToString().Equals(""))
-                            {
-                                sensor.username = "N/A";
-                            }
-                            else
-                            {
-                                sensor.username = reader["username"].ToString();
-                            }
-
-                            sensors.Add(sensor);
-                        }
-                        reader.Close();
-                        connection.Close();
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine(ex.Message);
-                    }
-
-                }
-
-                return Ok(sensors);//Respecting HTTP errors (200 OK)
-            }
-            return BadRequest("Não Autenticado");
-        }
 
         [Route("api/sensors/all")]
         [HttpPost]
@@ -86,6 +41,52 @@ namespace IPLeiriaSmartCampus.Controllers
                             Sensor sensor = new Sensor();
                             sensor.SensorID = int.Parse(reader["id"].ToString());
                             sensor.Local = reader["local"].ToString();
+
+                            sensors.Add(sensor);
+                        }
+                        reader.Close();
+                        connection.Close();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+
+                }
+
+                return Ok(sensors);//Respecting HTTP errors (200 OK)
+            }
+            return BadRequest("Não Autenticado");
+        }
+
+        [Route("api/sensors/authed/")]
+        [HttpPost]
+        public IHttpActionResult GetAllSensorsLoad([FromBody] CredMod mod)
+        {
+            List<Sensor> sensors = new List<Sensor>();
+            string query = "Select * from sensor";
+            if (mod.cred != null && UserController.ValidateUser(mod.cred))
+            {
+                using (SqlConnection connection = new SqlConnection(connectionString))
+                {
+                    SqlCommand command = new SqlCommand(query, connection);
+                    try
+                    {
+                        connection.Open();
+                        SqlDataReader reader = command.ExecuteReader();
+                        while (reader.Read())
+                        {
+                            Sensor sensor = new Sensor();
+                            sensor.SensorID = int.Parse(reader["id"].ToString());
+                            sensor.Local = reader["local"].ToString();
+                            if (reader["username"].ToString().Equals(""))
+                            {
+                                sensor.username = "N/A";
+                            }
+                            else
+                            {
+                                sensor.username = reader["username"].ToString();
+                            }
 
                             sensors.Add(sensor);
                         }
@@ -240,13 +241,13 @@ namespace IPLeiriaSmartCampus.Controllers
             int rows = 0;
             if (response.cred != null && UserController.ValidateUser(response.cred))
             {
-                if (!hasUser(response.sensor) && SensorExists(response.sensor) && UserController.findUser(response.username) != null)
+                if (!hasUser(response.SensorID) && SensorExists(response.SensorID) && UserController.findUser(response.username) != null)
                 {
                     string query = "Update sensor set username = @user where id = @id";
                     using (SqlConnection connection = new SqlConnection(connectionString))
                     {
                         SqlCommand command = new SqlCommand(query, connection);
-                        command.Parameters.AddWithValue("@id", response.sensor);
+                        command.Parameters.AddWithValue("@id", response.SensorID);
                         command.Parameters.AddWithValue("@user", response.username);
 
                         try

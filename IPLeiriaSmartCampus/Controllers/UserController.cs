@@ -16,57 +16,12 @@ namespace IPLeiriaSmartCampus.Controllers
     {
         static string connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["IPLeiriaSmartCampus.Properties.Settings.ConnStr"].ConnectionString;
 
-        
-        [Route("api/users")]
-        [HttpDelete]
-        public IHttpActionResult DeleteUser(string username, string password)
-        {
-            int rows = 0;
-            User toDelete = findUser(username);
-            if (toDelete != null)
-            {
-                var data = Encoding.UTF8.GetBytes(password);
-                var sha1 = new SHA1CryptoServiceProvider();
-                var sha1data = sha1.ComputeHash(data);
-                string hashedPass = Encoding.UTF8.GetString(sha1data);
-                if (hashedPass.Equals(toDelete.Password))
-                {
-                    string query = "delete from users where username = @username";
-                    using (SqlConnection connection = new SqlConnection(connectionString))
-                    {
-                        SqlCommand command = new SqlCommand(query, connection);
-                        command.Parameters.AddWithValue("@username", username);
-                        try
-                        {
-                            connection.Open();
-                            rows += command.ExecuteNonQuery();
-                            connection.Close();
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine(ex.Message);
-                        }
-                        return Ok(rows);
-                    }
-                }
-                else
-                {
-                    return BadRequest("A password não está certa");
-                }
-            }
-            else
-            {
-                return BadRequest("O user não existe");
-            }
-        }
-
-
-        [Route("api/users")]
+        [Route("api/users/get")]
         [HttpPost]
-        public IHttpActionResult GetAllUsers(string cred)
+        public IHttpActionResult GetAllUsers(CredMod cred)
         {
             List<User> users = new List<User>();
-            if (cred != null && ValidateUser(cred))
+            if (cred.cred != null && ValidateUser(cred.cred))
             {
                 string query = "Select username,name from users";
                 using (SqlConnection connection = new SqlConnection(connectionString))
@@ -102,8 +57,8 @@ namespace IPLeiriaSmartCampus.Controllers
         public IHttpActionResult CreateUser(UserMapper user)
         {
             int rows = 0;
-            if (user.cred != null && ValidateUser(user.cred))
-            {
+           // if (user.cred != null && ValidateUser(user.cred))
+           // {
                 if (findUser(user.Username) == null && user.Password == user.PasswordConfirmation)
                 {
                     string query = "insert into users (username,password,name) values (@username,@password,@name) ";
@@ -135,10 +90,33 @@ namespace IPLeiriaSmartCampus.Controllers
                 {
                     return BadRequest("O username já existe ou a password não está confirmada");
                 }
-            }
-            return BadRequest("Não Autenticado");
+           // }
+            //return BadRequest("Não Autenticado");
         }
-      
+
+        [Route("api/users/auth")]
+        [HttpPost]
+        public IHttpActionResult authUser(AuthModel model)
+        {
+            bool res = false;
+            User user = findUser(model.username);
+            if (user != null)
+            {
+                var sha1 = new SHA1CryptoServiceProvider();
+                var dataHash = Encoding.UTF8.GetBytes(model.password);
+                byte[] sha1data = sha1.ComputeHash(dataHash);
+                string hashedPass = Encoding.UTF8.GetString(sha1data);
+
+                Debug.WriteLine("hashedPass do creed: " + hashedPass + " | hashedPass do user: " + Encoding.UTF8.GetString(Encoding.UTF8.GetBytes(user.Password)));
+                if (user.Password.Equals(hashedPass))
+                {
+                    res = true;
+                    return Ok(res);
+                }
+                return Ok(res);
+            }
+            return Ok(res);
+        }
 
         public static User findUser(string username)
         {
@@ -217,29 +195,7 @@ namespace IPLeiriaSmartCampus.Controllers
             }
             return false;
         }
-        [Route("api/users/auth")]
-        [HttpPost]
-        public IHttpActionResult authUser(AuthModel model)
-        {
-            bool res = false;
-            User user = findUser(model.username);
-            if (user != null)
-            {
-                var sha1 = new SHA1CryptoServiceProvider();
-                var dataHash = Encoding.UTF8.GetBytes(model.password);
-                byte[] sha1data = sha1.ComputeHash(dataHash);
-                string hashedPass = Encoding.UTF8.GetString(sha1data);
-
-                Debug.WriteLine("hashedPass do creed: " + hashedPass + " | hashedPass do user: " + Encoding.UTF8.GetString(Encoding.UTF8.GetBytes(user.Password)));
-                if (user.Password.Equals(hashedPass))
-                {
-                    res = true;
-                    return Ok(res);
-                }
-                return Ok(res);
-            }
-            return Ok(res);
-        }
+       
 
 
     }
