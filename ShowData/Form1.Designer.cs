@@ -49,13 +49,19 @@
             this.button1 = new System.Windows.Forms.Button();
             this.labelLogin = new System.Windows.Forms.Label();
             this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
+            this.tabControl1 = new System.Windows.Forms.TabControl();
+            this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.tabPage2 = new System.Windows.Forms.TabPage();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
+            this.tabControl1.SuspendLayout();
+            this.tabPage1.SuspendLayout();
+            this.tabPage2.SuspendLayout();
             this.SuspendLayout();
             // 
             // comboBoxSensors
             // 
             this.comboBoxSensors.FormattingEnabled = true;
-            this.comboBoxSensors.Location = new System.Drawing.Point(257, 12);
+            this.comboBoxSensors.Location = new System.Drawing.Point(241, 17);
             this.comboBoxSensors.Name = "comboBoxSensors";
             this.comboBoxSensors.Size = new System.Drawing.Size(121, 21);
             this.comboBoxSensors.TabIndex = 0;
@@ -134,22 +140,22 @@
             // 
             // richTextBoxData
             // 
-            this.richTextBoxData.Location = new System.Drawing.Point(12, 157);
+            this.richTextBoxData.Location = new System.Drawing.Point(16, 148);
             this.richTextBoxData.Name = "richTextBoxData";
-            this.richTextBoxData.Size = new System.Drawing.Size(591, 226);
+            this.richTextBoxData.Size = new System.Drawing.Size(591, 191);
             this.richTextBoxData.TabIndex = 9;
             this.richTextBoxData.Text = "";
             // 
             // textBoxUsername
             // 
-            this.textBoxUsername.Location = new System.Drawing.Point(769, 32);
+            this.textBoxUsername.Location = new System.Drawing.Point(784, 34);
             this.textBoxUsername.Name = "textBoxUsername";
             this.textBoxUsername.Size = new System.Drawing.Size(136, 20);
             this.textBoxUsername.TabIndex = 10;
             // 
             // textBoxPassword
             // 
-            this.textBoxPassword.Location = new System.Drawing.Point(769, 73);
+            this.textBoxPassword.Location = new System.Drawing.Point(784, 73);
             this.textBoxPassword.Name = "textBoxPassword";
             this.textBoxPassword.Size = new System.Drawing.Size(136, 20);
             this.textBoxPassword.TabIndex = 12;
@@ -158,7 +164,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(693, 39);
+            this.label1.Location = new System.Drawing.Point(713, 37);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(58, 13);
             this.label1.TabIndex = 13;
@@ -167,7 +173,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(695, 73);
+            this.label2.Location = new System.Drawing.Point(713, 76);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(56, 13);
             this.label2.TabIndex = 14;
@@ -175,7 +181,7 @@
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(792, 99);
+            this.button1.Location = new System.Drawing.Point(813, 99);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(75, 23);
             this.button1.TabIndex = 15;
@@ -186,7 +192,7 @@
             // labelLogin
             // 
             this.labelLogin.AutoSize = true;
-            this.labelLogin.Location = new System.Drawing.Point(810, 139);
+            this.labelLogin.Location = new System.Drawing.Point(830, 125);
             this.labelLogin.Name = "labelLogin";
             this.labelLogin.Size = new System.Drawing.Size(0, 13);
             this.labelLogin.TabIndex = 16;
@@ -197,49 +203,86 @@
             this.chart1.ChartAreas.Add(chartArea1);
             legend1.Name = "Legend1";
             this.chart1.Legends.Add(legend1);
-            this.chart1.Location = new System.Drawing.Point(609, 157);
+            this.chart1.Location = new System.Drawing.Point(-4, 0);
             this.chart1.Name = "chart1";
             this.chart1.Palette = System.Windows.Forms.DataVisualization.Charting.ChartColorPalette.Fire;
             series1.ChartArea = "ChartArea1";
             series1.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
             series1.Legend = "Legend1";
             series1.Name = "Temperature";
+            series1.XValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.DateTime;
             series2.ChartArea = "ChartArea1";
             series2.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
             series2.Legend = "Legend1";
             series2.Name = "Humidity";
+            series2.XValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.DateTime;
             this.chart1.Series.Add(series1);
             this.chart1.Series.Add(series2);
-            this.chart1.Size = new System.Drawing.Size(338, 226);
+            this.chart1.Size = new System.Drawing.Size(695, 342);
             this.chart1.TabIndex = 17;
             this.chart1.Text = "chart1";
+            // 
+            // tabControl1
+            // 
+            this.tabControl1.Controls.Add(this.tabPage1);
+            this.tabControl1.Controls.Add(this.tabPage2);
+            this.tabControl1.Location = new System.Drawing.Point(12, 12);
+            this.tabControl1.Name = "tabControl1";
+            this.tabControl1.SelectedIndex = 0;
+            this.tabControl1.Size = new System.Drawing.Size(702, 371);
+            this.tabControl1.TabIndex = 18;
+            // 
+            // tabPage1
+            // 
+            this.tabPage1.Controls.Add(this.labelHumidityValue);
+            this.tabPage1.Controls.Add(this.labelTemperatureValue);
+            this.tabPage1.Controls.Add(this.labelBattery);
+            this.tabPage1.Controls.Add(this.labelHumidity);
+            this.tabPage1.Controls.Add(this.comboBoxSensors);
+            this.tabPage1.Controls.Add(this.labelTemperature);
+            this.tabPage1.Controls.Add(this.labelBatteryValue);
+            this.tabPage1.Controls.Add(this.labelData);
+            this.tabPage1.Controls.Add(this.labelDataValue);
+            this.tabPage1.Controls.Add(this.richTextBoxData);
+            this.tabPage1.Location = new System.Drawing.Point(4, 22);
+            this.tabPage1.Name = "tabPage1";
+            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage1.Size = new System.Drawing.Size(694, 345);
+            this.tabPage1.TabIndex = 0;
+            this.tabPage1.Text = "Data Table";
+            this.tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // tabPage2
+            // 
+            this.tabPage2.Controls.Add(this.chart1);
+            this.tabPage2.Location = new System.Drawing.Point(4, 22);
+            this.tabPage2.Name = "tabPage2";
+            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage2.Size = new System.Drawing.Size(694, 345);
+            this.tabPage2.TabIndex = 1;
+            this.tabPage2.Text = "Data Char";
+            this.tabPage2.UseVisualStyleBackColor = true;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(932, 405);
-            this.Controls.Add(this.chart1);
+            this.Controls.Add(this.tabControl1);
             this.Controls.Add(this.labelLogin);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.textBoxPassword);
             this.Controls.Add(this.textBoxUsername);
-            this.Controls.Add(this.richTextBoxData);
-            this.Controls.Add(this.labelDataValue);
-            this.Controls.Add(this.labelData);
-            this.Controls.Add(this.labelBatteryValue);
-            this.Controls.Add(this.labelBattery);
-            this.Controls.Add(this.labelHumidityValue);
-            this.Controls.Add(this.labelTemperatureValue);
-            this.Controls.Add(this.labelHumidity);
-            this.Controls.Add(this.labelTemperature);
-            this.Controls.Add(this.comboBoxSensors);
             this.Name = "Form1";
-            this.Text = "Form1";
+            this.Text = "Show Data";
             this.Load += new System.EventHandler(this.Form1_Load);
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).EndInit();
+            this.tabControl1.ResumeLayout(false);
+            this.tabPage1.ResumeLayout(false);
+            this.tabPage1.PerformLayout();
+            this.tabPage2.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -264,6 +307,9 @@
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Label labelLogin;
         private System.Windows.Forms.DataVisualization.Charting.Chart chart1;
+        private System.Windows.Forms.TabControl tabControl1;
+        private System.Windows.Forms.TabPage tabPage1;
+        private System.Windows.Forms.TabPage tabPage2;
     }
 }
 

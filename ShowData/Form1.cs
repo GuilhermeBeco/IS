@@ -10,6 +10,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Forms.DataVisualization.Charting;
 using uPLibrary.Networking.M2Mqtt;
 using uPLibrary.Networking.M2Mqtt.Messages;
 
@@ -104,8 +105,12 @@ namespace ShowData
 
         private void updateUI()
         {
+
             chart1.Invoke((MethodInvoker)delegate
             {
+                chart1.ChartAreas[0].AxisX.LabelStyle.Format = "yyyy/MM/dd   HH:mm";
+                chart1.ChartAreas[0].AxisX.Interval = 1;
+                chart1.ChartAreas[0].AxisX.IntervalType = DateTimeIntervalType.Hours;
                 chart1.Series["Temperature"].Points.Clear();
                 chart1.Series["Humidity"].Points.Clear();
             });
@@ -113,12 +118,9 @@ namespace ShowData
             foreach (AQ aq in aqs)
             {
                 richTextBoxData.Invoke((MethodInvoker)delegate { richTextBoxData.Text += aq.ToString(); });
-
-                //  chart1.Series["Temperature"].Points.AddXY(aq.Timestamp.Subtract(new DateTime(1970, 1, 1)).TotalSeconds, aq.Temperature);
-                //chart1.Series["Humidity"].Points.AddXY(aq.Timestamp.Subtract(new DateTime(1970, 1, 1)).TotalSeconds, aq.Humidity);
                 chart1.Invoke((MethodInvoker)delegate {
-                    chart1.Series["Temperature"].Points.AddXY(aq.Id, aq.Temperature);
-                    chart1.Series["Humidity"].Points.AddXY(aq.Id, aq.Humidity);
+                    chart1.Series["Temperature"].Points.AddXY(aq.Timestamp, aq.Temperature);
+                    chart1.Series["Humidity"].Points.AddXY(aq.Timestamp, aq.Humidity);
                 });
                 
             }

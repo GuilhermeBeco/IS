@@ -233,7 +233,7 @@
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
             this.Name = "Form1";
-            this.Text = "Form1";
+            this.Text = "Alert Data";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_closing);
             this.Load += new System.EventHandler(this.Form1_Load);
             this.ResumeLayout(false);
