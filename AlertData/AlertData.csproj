@@ -55,6 +55,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Alert.cs" />
     <Compile Include="AQ.cs" />
     <Compile Include="AuthModel.cs" />
     <Compile Include="FileManager.cs" />

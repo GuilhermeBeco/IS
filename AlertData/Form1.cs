@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -95,6 +96,19 @@ namespace AlertData
             try
             {
                 smtpobj.Send(o);
+                Alert a = new Alert();
+                a.id = 0;
+                a.body = body;
+                a.timestamp = DateTime.Now;
+                string dataAlert = Newtonsoft.Json.JsonConvert.SerializeObject(a);
+                try
+                {
+                    string response = Post("https://localhost:44327/api/alert", dataAlert, "application/json");
+                }catch(Exception e)
+                {
+                    Debug.WriteLine("Faleceu");
+                }
+
             } catch (Exception e)
             {
                 Console.WriteLine(o.ToString());

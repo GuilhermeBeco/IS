@@ -267,68 +267,95 @@ namespace IPLeiriaSmartCampus.Controllers
             }
             return id;
         }
-
-        [Route("api/aq/burst/")]
-        [HttpPost]
-        public IHttpActionResult PostAQS([FromBody]List<AQMap> dadosSensores)
+        public int getIdAlertData()
         {
-            string topic = "dataISMosquittoTest";
-            string topicSensor = "newSensorsInsertIS";
-            int rows = 0;
-            int fails = 0;
-            int id = getId();
-            int idMqtt = id++;
-            string query = "Insert into dbo.AQ (SensorID, Temperature, Humidity, Battery, Timestamp,id ) values (@Sensor, @Temp, @Hum, @Bat, @Time, @id)";
+            int id = 0;
+            string querySelect = "Select top 1 id from AlertData order by id desc";
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                foreach (AQMap aq in dadosSensores)
+                SqlCommand command = new SqlCommand(querySelect, connection);
+                try
                 {
-
-                    SqlCommand command = new SqlCommand(query, connection);
-                    if (SensorController.SensorExists(aq.SensorID))
+                    connection.Open();
+                    SqlDataReader reader = command.ExecuteReader();
+                    while (reader.Read())
                     {
-                        System.DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
-                        dtDateTime = dtDateTime.AddSeconds(double.Parse(aq.Timestamp)).ToLocalTime();
-                        id++;
-                        command.Parameters.AddWithValue("@id", id);
-                        command.Parameters.AddWithValue("@Sensor", aq.SensorID);
-                        command.Parameters.AddWithValue("@Temp", aq.Temperature);
-                        command.Parameters.AddWithValue("@Hum", aq.Humidity);
-                        command.Parameters.AddWithValue("@Bat", aq.Battery);
-                        command.Parameters.AddWithValue("@Time", dtDateTime);
 
-                        try
-                        {
-                            connection.Open();
-                            rows = rows + command.ExecuteNonQuery();
-                            connection.Close();
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine(ex.Message);
-                        
-                        }
-
+                        id = int.Parse(reader["id"].ToString());
                     }
-                    else
-                    {
-                        fails++;
-                        aqsSemSensor.Add(aq);
-                    }
+                    reader.Close();
+                    connection.Close();
                 }
-                mcClient.Connect(Guid.NewGuid().ToString());
-                if (!mcClient.IsConnected)
+                catch (Exception ex)
                 {
-                    Console.WriteLine("Error connecting to message broker...");
-
+                    Console.WriteLine(ex.Message);
                 }
-                mcClient.Publish("dataISMosquittoTest", Encoding.UTF8.GetBytes(idMqtt.ToString()));
-                
-                mcClient.Subscribe(new string[] { topicSensor }, new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
-                mcClient.MqttMsgPublishReceived += client_MqttMsgPublishReceived;
-                return Ok("Foram inseridas " + rows + " linhas e falharam " + fails + " pois não existem alguns sensores");
+
             }
+            return id;
         }
+
+        /*  [Route("api/aq/burst/")]
+          [HttpPost]
+          public IHttpActionResult PostAQS([FromBody]List<AQMap> dadosSensores)
+          {
+              string topic = "dataISMosquittoTest";
+              string topicSensor = "newSensorsInsertIS";
+              int rows = 0;
+              int fails = 0;
+              int id = getId();
+              int idMqtt = id++;
+              string query = "Insert into dbo.AQ (SensorID, Temperature, Humidity, Battery, Timestamp,id ) values (@Sensor, @Temp, @Hum, @Bat, @Time, @id)";
+              using (SqlConnection connection = new SqlConnection(connectionString))
+              {
+                  foreach (AQMap aq in dadosSensores)
+                  {
+
+                      SqlCommand command = new SqlCommand(query, connection);
+                      if (SensorController.SensorExists(aq.SensorID))
+                      {
+                          System.DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
+                          dtDateTime = dtDateTime.AddSeconds(double.Parse(aq.Timestamp)).ToLocalTime();
+                          id++;
+                          command.Parameters.AddWithValue("@id", id);
+                          command.Parameters.AddWithValue("@Sensor", aq.SensorID);
+                          command.Parameters.AddWithValue("@Temp", aq.Temperature);
+                          command.Parameters.AddWithValue("@Hum", aq.Humidity);
+                          command.Parameters.AddWithValue("@Bat", aq.Battery);
+                          command.Parameters.AddWithValue("@Time", dtDateTime);
+
+                          try
+                          {
+                              connection.Open();
+                              rows = rows + command.ExecuteNonQuery();
+                              connection.Close();
+                          }
+                          catch (Exception ex)
+                          {
+                              Console.WriteLine(ex.Message);
+
+                          }
+
+                      }
+                      else
+                      {
+                          fails++;
+                          aqsSemSensor.Add(aq);
+                      }
+                  }
+                  mcClient.Connect(Guid.NewGuid().ToString());
+                  if (!mcClient.IsConnected)
+                  {
+                      Console.WriteLine("Error connecting to message broker...");
+
+                  }
+                  mcClient.Publish("dataISMosquittoTest", Encoding.UTF8.GetBytes(idMqtt.ToString()));
+
+                  mcClient.Subscribe(new string[] { topicSensor }, new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
+                  mcClient.MqttMsgPublishReceived += client_MqttMsgPublishReceived;
+                  return Ok("Foram inseridas " + rows + " linhas e falharam " + fails + " pois não existem alguns sensores");
+              }
+          }*/
 
         private void client_MqttMsgPublishReceived(object sender, MqttMsgPublishEventArgs e)
         {
@@ -460,5 +487,69 @@ namespace IPLeiriaSmartCampus.Controllers
             }
          return BadRequest("Não autenticado");
        }
+
+        [Route("api/alert")]
+        [HttpPost]
+        public IHttpActionResult PostAlert(Alert alert)
+        {
+            int rows = 0;
+            int id = getIdAlertData();
+            string query = "Insert into AlertData (id,body, timestamp ) values (@id,@body,@Time)";
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                SqlCommand command = new SqlCommand(query, connection);
+                id++;
+                command.Parameters.AddWithValue("@id", id);
+                command.Parameters.AddWithValue("@body", alert.body);
+                command.Parameters.AddWithValue("@Time", alert.timestamp);
+
+                try
+                {
+                    connection.Open();
+                    rows += command.ExecuteNonQuery();
+                    connection.Close();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+                return Ok(rows);
+            }
+        }
+
+        [Route("api/alert/get")]
+        [HttpPost]
+        public IHttpActionResult GetAlert(CredMod credMod)
+        {
+            int rows = 0;
+            List<Alert> alerts = new List<Alert>();
+            string query = "Select * from AlertData";
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                SqlCommand command = new SqlCommand(query, connection);
+
+                try
+                {
+                    connection.Open();
+                    SqlDataReader reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        Alert a = new Alert();
+                        a.id = int.Parse(reader["id"].ToString());
+                        a.body = reader["body"].ToString();
+                        a.timestamp = DateTime.Parse(reader["timestamp"].ToString());
+                        alerts.Add(a);
+                    }
+                    reader.Close();
+                    connection.Close();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+                return Ok(alerts);
+            }
+        }
+
     }
 }
